@@ -1,0 +1,55 @@
+<project name="memo" default="package-tar">
+	<property name = "base.dir" value = "."/>
+	<property name = "app.name" value = "graha-memo"/>
+	<property name = "app.version" value = "0.9.0.0"/>
+	<property name = "package.dir" value = "${base.dir}/package"/>
+	<target name="depends">
+		<mkdir dir="${package.dir}" />
+	</target>
+	<target name="clean">
+		<delete dir="${package.dir}" />
+	</target>
+	<target name="package-war" depends="depends">
+		<war destfile="${package.dir}/${app.name}.${app.version}.war" webxml="${base.dir}/WEB-INF/web-tomcat8.xml">
+			<zipfileset dir="${base.dir}/css" includes="**/*.css" prefix="css" />
+			<zipfileset dir="${base.dir}/js" includes="**/*.js" prefix="js" />
+			<zipfileset dir="${base.dir}/WEB-INF" prefix="WEB-INF" includes="**/*.xml, **/*.sql"/>
+			<zipfileset dir="/opt/java/lib/apache-commons" prefix="WEB-INF/lib" includes="commons-fileupload-1.3.3.jar" />
+			<zipfileset dir="/opt/java/lib/apache-commons" prefix="WEB-INF/lib" includes="commons-io-1.1.jar" />
+			<zipfileset dir="/opt/java/lib/graha" prefix="WEB-INF/lib" includes="graha.0.5.0.6.jar" />
+			<fileset dir="${base.dir}" prefix="META-INF" includes="LICENSE" />
+			<zipfileset dir="${base.dir}" prefix="META-INF" includes="*.md"/>
+		</war>
+	</target>
+	<target name="package-tomcat10-war" depends="depends">
+		<war destfile="${package.dir}/${app.name}.${app.version}-tomcat10.war" webxml="${base.dir}/WEB-INF/web-tomcat10.xml">
+			<zipfileset dir="${base.dir}/css" includes="**/*.css" prefix="css" />
+			<zipfileset dir="${base.dir}/js" includes="**/*.js" prefix="js" />
+			<zipfileset dir="${base.dir}/WEB-INF" prefix="WEB-INF" includes="**/*.xml, **/*.sql"/>
+			<zipfileset dir="${package.dir}" prefix="WEB-INF/lib" includes="${app.name}.${app.version}-tomcat10.jar" />
+			<zipfileset dir="/opt/java/lib/apache-commons" prefix="WEB-INF/lib" includes="commons-io-1.1.jar" />
+			<zipfileset dir="/opt/java/lib/graha" prefix="WEB-INF/lib" includes="graha.0.5.0.6-tomcat10.jar" />
+			<fileset dir="${base.dir}" prefix="META-INF" includes="LICENSE" />
+			<zipfileset dir="${base.dir}" prefix="META-INF" includes="*.md"/>
+		</war>
+	</target>
+	<target name="package-zip" depends="depends">
+		<zip destfile="${package.dir}/${app.name}.${app.version}.zip">
+			<zipfileset dir="${base.dir}/css" includes="**/*.css" prefix="css" />
+			<zipfileset dir="${base.dir}/js" includes="**/*.js" prefix="js" />
+			<zipfileset dir="${base.dir}/WEB-INF" prefix="WEB-INF" includes="**/*.xml, **/*.sql"/>
+			<fileset dir="${base.dir}" includes="LICENSE" />
+			<fileset dir="${base.dir}" includes="*.md" />
+		</zip>
+	</target>
+	<target name="package-tar" depends="depends">
+		<tar destfile="${package.dir}/${app.name}.${app.version}.tar.gz" compression="gzip">
+			<tarfileset dir="${base.dir}/css" includes="**/*.css" prefix="css" />
+			<tarfileset dir="${base.dir}/js" includes="**/*.js" prefix="js" />
+			<tarfileset dir="${base.dir}/WEB-INF" prefix="WEB-INF" includes="**/*.xml, **/*.sql"/>
+			<fileset dir="${base.dir}" includes="LICENSE" />
+			<fileset dir="${base.dir}" includes="*.md" />
+		</tar>
+	</target>
+	<target name="package-all" depends="package-war, package-zip, package-tar, package-tomcat10-war" />
+</project>

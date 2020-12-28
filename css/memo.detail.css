@@ -1,0 +1,185 @@
+table#memo th {
+	width:120px;
+}
+
+table#memo td.contents {
+	white-space:pre-wrap;
+	height: 150px;
+}
+
+table#memo td.contents2 {
+	height: 150px;
+	display:none;
+}
+
+table#memo_history {
+	margin-top:10px;
+}
+
+table#memo_history td.update_date, 
+table#memo_history th.update_date {
+	width:200px;
+	text-align:center;
+}
+
+ul.multitab, 
+h3.memo, 
+h3.memo_history,
+h3.memo_child {
+	display:none;
+}
+
+table#memo_history th.contents,
+table#memo_history th.marked,
+table#memo_history th.encrypted,
+table#memo_history th.encrypted_title,
+table#memo_history th.memo_history_id,
+table#memo_history th.contents2,
+table#memo_history td.marked,
+table#memo_history td.encrypted,
+table#memo_history td.encrypted_title,
+table#memo_history td.memo_history_id,
+table#memo_history td.contents2
+{
+	display:none;
+}
+
+table#memo_history td.contents {
+	white-space:pre-wrap;
+	height: 150px;
+	display:none;
+}
+table#memo_history th {
+	background-color:#84898C;
+	padding:3px;
+}
+table#memo_history td {
+	border-bottom:#84898C 1px solid;
+	padding:3px;
+}
+table#memo_history td table td {
+	border:0px;
+	padding:3px;
+}
+table#memo_history {
+	border-top:#84898C 2px solid;
+	border-bottom:#84898C 1px solid;
+}
+
+/*
+A5B8D0
+*/
+
+table#memo_child {
+	margin-top:10px;
+}
+
+table#memo_child td.update_date, 
+table#memo_child th.update_date {
+	width:200px;
+	text-align:center;
+}
+@media only screen and (max-width: 600px) {
+	table#memo_child td.update_date, 
+	table#memo_child th.update_date {
+		display:none;
+	}
+	table#memo_history td.update_date, 
+	table#memo_history th.update_date {
+		display:none;
+	}
+	table#memo th {
+		display:none;
+	}
+	
+	table#memo td.update_date,
+	table#memo td.insert_date
+	{
+		display:block;
+	}
+	
+	table#memo td.update_date:after {
+		content: " U";
+	}
+	table#memo td.insert_date:after {
+		content: " I";
+	}
+}
+
+table#memo_child th.encrypted_title,
+table#memo_child td.encrypted_title,
+table#memo_child th.encrypted,
+table#memo_child td.encrypted {
+	display:none;
+}
+
+table#memo td.title i.security,
+table#memo_history td.title i.security,
+table#memo_child td.title i.security
+{
+	vertical-align: middle;
+	margin-right:5px;
+	
+}
+
+table#memo_history td.title i.history,
+table#memo_history td.title i.delete_forever {
+	float:right;
+	margin-right:5px;
+	cursor:pointer;
+	vertical-align: middle;
+}
+
+div#diff {
+	background-color: rgba(0, 0, 0, 0.7);
+	width:100%;
+	height:100%;
+	position:absolute;
+	top:0;
+	left:0;
+	display:none;
+	z-index:1;
+	padding:0px;
+	margin:0px;
+}
+div#diff i.close {
+	float:right;
+	z-index:-1;
+	cursor:pointer;
+	padding-top:15px;
+	padding-right:15px;
+}
+div#diff pre#display {
+	float:left;
+	margin:0px;
+	padding:15px;
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	line-height:2em;
+	border:none;
+	color:#000;
+	background-color:#FFFFFF;
+	opacity: 1.0;
+	z-index:-1;
+	overflow-y: scroll;
+}
+div#diff pre#display span {
+	display:block;
+}
+
+td.hljs-ln-numbers {
+	padding-right:10px;
+}
+/*
+td.contents2 h4, 
+td.contents2 ul, 
+td.contents2 ul li
+{
+	padding-top:0px;
+	padding-bottom:0px;
+	margin:0px;
+}
+*/

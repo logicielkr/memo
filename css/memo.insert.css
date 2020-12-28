@@ -1,0 +1,62 @@
+table#memo th {
+	width:120px;
+}
+
+table#memo td.contents textarea {
+	height: 150px;
+}
+
+table#memo th.encrypted,
+table#memo td.encrypted,
+table#memo th.autosave,
+table#memo td.autosave,
+form.delete button
+{
+	display:none;
+}
+
+table#memo th.encrypted.show,
+table#memo td.encrypted.show,
+table#memo th.autosave.show,
+table#memo td.autosave.show
+{
+	display:table-cell;
+}
+
+
+@media only screen and (max-width: 600px) {
+	table#memo th.title {
+		display:none;
+	}
+	table#memo td.title {
+		width:100%;
+		background-color:#f3f3f3;
+	}
+	table#memo td,
+	table#memo th
+	{
+		display:block;
+	}
+	table#memo th.marked,
+	table#memo th.history,
+	table#memo th.encrypted.show,
+	table#memo th.autosave.show
+	{
+		width:130px;
+		display:block;
+		float:left;
+		clear:both;
+	}
+	table#memo td.marked,
+	table#memo td.history,
+	table#memo td.encrypted.show,
+	table#memo td.autosave.show
+	{
+		display:block;
+	}
+	table#memo td.encrypted.show,
+	table#memo td.autosave.show
+	{
+		display:block;
+	}
+}

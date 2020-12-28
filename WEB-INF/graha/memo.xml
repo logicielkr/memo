@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<querys>
+	<header extends="_base.xml">
+		<jndi name="jdbc/graha_sample" />
+		<prop name="logined_user" value="guest" />
+		<prop name="logined_user" value="${session.user_id}" cond="${session.user_id} isNotEmpty" />
+		<prop name="logined_user" value="${header.remote_user}" cond="${header.remote_user} isNotEmpty" />
+		<style>
+button i {
+	vertical-align: middle;
+}
+		</style>
+	</header>
+	<query id="list" funcType="list" label="메모">
+		<header>
+			<style src="https://fonts.googleapis.com/icon?family=Material+Icons" />
+			<style src="../../css/memo.list.css" />
+			<style src="../../css/memo.pwd_area.css" />
+			<style src="../../css/memo.message_area.css" />
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.8/sjcl.js" />
+			<script src="https://cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" />
+			<script src="https://cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" />
+			<script><![CDATA[
+var isEncrypted = false;
+<xsl:if test="/document/rows[@id='memo']/row/encrypted = 't'">
+isEncrypted = true;
+</xsl:if>
+			]]></script>
+			<script src="../../js/memo.pwd_area.js" override="true" />
+			<script src="../../js/memo.message_area.js" override="true" />
+			<script src="../../js/memo.list.js" />
+			<xi:include href="memo/pwd_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+			<xi:include href="memo/message_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+		</header>
+		<commands>
+			<command name="memo">
+				<sql pageSize="15" pageGroupSize="10">
+					select
+						memo_id
+						, case when encrypted = true then '암호화된 게시물' else title end as title
+						, case when encrypted = true then title else '' end as encrypted_title
+						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
+						, encrypted
+					from memo
+					where insert_id = ?
+					and parent_id is null
+<tile cond="${param.search} isNotEmpty">
+					and (title like '%' || ? || '%' or contents like '%' || ? || '%')
+</tile>
+					order by memo_id desc
+				</sql>
+				<sql_cnt>
+					select count(*) from memo where insert_id = ? and parent_id is null
+<tile cond="${param.search} isNotEmpty">
+					and (title like '%' || ? || '%' or contents like '%' || ? || '%')
+</tile>
+				</sql_cnt>
+				<params>
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
+					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
+				</params>
+			</command>
+		</commands>
+		<layout>
+			<top>
+				<center>
+					<search label="검색" path="/memo/list">
+						<params>
+							<param name="search" value="search" />
+						</params>
+					</search>
+				</center>
+				<right>
+					<link name="insert" label="추가" path="/memo/insert" icon="add" class="material-icons md-18 add" />
+				</right>
+			</top>
+			<middle>
+				<tab name="memo">
+					<column label="제목" name="title">
+						<link path="/memo/detail">
+							<param name="memo_id" type="query" value="memo_id" />
+						</link>
+					</column>
+					<column label="마지막수정일시" name="update_date" />
+					<column label="암호화된 제목" name="encrypted_title" />
+				</tab>
+			</middle>
+			<bottom>
+			<center>page</center>
+			</bottom>
+		</layout>
+	</query>
+	<query id="insert" funcType="insert" label="메모">
+		<header>
+			<style src="../../css/memo.insert.css" />
+			<style src="../../css/memo.pwd_area.css" />
+			<style src="../../css/memo.message_area.css" />
+			<style src="https://fonts.googleapis.com/icon?family=Material+Icons" />
+			<style><![CDATA[
+<xsl:if test="/document/rows[@id='memo']/row/encrypted = 't'">
+div#pwd_area {
+	display:block;
+}
+</xsl:if>
+			]]></style>
+			<script><![CDATA[
+var isEncrypted = false;
+<xsl:if test="/document/rows[@id='memo']/row/encrypted = 't'">
+isEncrypted = true;
+</xsl:if>
+
+var memoId = null;
+<xsl:if test="/document/params[@for='data']/memo_id">
+memoId = <xsl:value-of select="/document/params[@for='data']/memo_id" />;
+</xsl:if>
+
+var memoHistoryId = null;
+<xsl:if test="/document/params[@for='data']/memo_history_id">
+memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history_id" />;
+</xsl:if>
+			]]></script>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.8/sjcl.js" />
+			<script src="https://cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" />
+			<script src="https://cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" />
+			<script src="../../js/memo.insert.js" name="check_submit" override="true" />
+			<script src="../../js/memo.pwd_area.js" override="true" />
+			<script src="../../js/memo.message_area.js" override="true" />
+			<xi:include href="memo/pwd_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+			<xi:include href="memo/message_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+			<prop name="savehistory" value="y" cond="${param.history} isEmpty" />
+			<prop name="savehistory" value="${prop.savehistory}y" cond="${param.memo_id} isNotEmpty" />
+		</header>
+		<processors>
+			<processor type="query" after="true" method="POST" cond="${param.memo_history_id} isNotEmpty">
+				<sql>
+					delete from memo_history where memo_history_id = ? and insert_id = ?
+				</sql>
+				<params>
+					<param name="memo_history_id" datatype="int" value="param.memo_history_id" default="-1" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+				</params>
+			</processor>
+			<processor type="query" before="true" method="POST" cond="${prop.savehistory} equals 'yy'">
+				<sql>
+					insert into memo_history (
+						memo_history_id,
+						title,
+						contents,
+						marked,
+						encrypted,
+						memo_id,
+						autosave,
+						parent_id,
+						insert_date,
+						insert_id,
+						insert_ip,
+						update_date,
+						update_id,
+						update_ip
+					)
+					select ? as memo_history_id,
+						title,
+						contents,
+						marked,
+						encrypted,
+						memo_id,
+						false as autosave,
+						parent_id,
+						insert_date,
+						insert_id,
+						insert_ip,
+						update_date,
+						update_id,
+						update_ip
+					from memo where memo_id = ?
+					and (md5(trim(title)) != md5(trim(?)) or md5(trim(contents)) != md5(trim(?)))
+					and insert_id = ?
+				</sql>
+				<params>
+					<param name="memo_history_id" datatype="int" value="sequence.nextval('memo_history$memo_history_id')" default="-1" />
+					<param name="memo_id" datatype="int" value="param.memo_id" default="-1" />
+					<param name="title" datatype="varchar" value="param.title" />
+					<param name="contents" datatype="varchar" value="param.contents" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+				</params>
+			</processor>
+			<processor type="query" before="true" method="GET" cond="${param.memo_id} isNotEmpty">
+				<sql>
+					delete from memo_history where memo_id = ? and insert_id = ?
+					and exists (
+						select * from memo where memo.memo_id = ? and memo.insert_id = ?
+						and md5(memo.title) = md5(memo_history.title)
+						and md5(memo.contents) = md5(memo_history.contents)
+					)
+				</sql>
+				<params>
+					<param name="memo_id" datatype="int" value="param.memo_id" default="-1" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="memo_id" datatype="int" value="param.memo_id" default="-1" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+				</params>
+			</processor>
+		</processors>
+		<validation method="POST">
+			<param name="title" not-null="true" msg="제목은 필수 항목입니다!" />
+		</validation>
+		<tables>
+			<table tableName="memo" name="memo" label="메모">
+				<column name="memo_id" value="param.memo_id" datatype="int" primary="true" insert="sequence.nextval('memo$memo_id')" />
+				<column name="title" value="param.title" datatype="varchar" />
+				<column name="contents" value="param.contents" datatype="varchar" />
+				<column name="marked" value="param.marked" datatype="boolean" />
+				<column name="encrypted" value="param.encrypted" datatype="boolean" />
+				<column name="parent_id" value="param.parent_id" datatype="int" />
+				<column name="insert_date" only="insert" value="sql.now()" datatype="timestamp" />
+				<column name="insert_id" only="insert" value="prop.logined_user" datatype="varchar" />
+				<column name="insert_ip" only="insert" value="header.remote_addr" datatype="varchar" />
+				<column name="update_date" value="sql.now()" datatype="timestamp" />
+				<column name="update_id" value="prop.logined_user" datatype="varchar" />
+				<column name="update_ip" value="header.remote_addr" datatype="varchar" />
+				<where>
+					<sql>
+						insert_id = ?
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
+			</table>
+		</tables>
+		<layout msg="변경사항을 저장하시겠습니까?">
+			<top>
+				<left>
+					<link name="list" label="목록" path="/memo/list" icon="list" class="material-icons md-18 list" />
+				</left>
+				<center />
+				<right>
+					<link name="save" label="저장" path="/memo/insert" method="post" type="submit" full="true" icon="save" class="material-icons md-18 save">
+						<params>
+							<param name="memo_id" type="query" value="memo_id" />
+							<param name="parent_id" value="parent_id" />
+							<param name="memo_history_id" value="memo_history_id" />
+						</params>
+					</link>
+				</right>
+			</top>
+			<middle>
+				<tab name="memo" label="메모">
+					<row>
+						<column label="제목" name="title" value="title" colspan="3" />
+					</row>
+					<row>
+						<column label="내용" name="contents" value="contents" type="textarea" colspan="4" islabel="false" />
+					</row>
+					<row>
+						<column label="마크다운" name="marked" value="marked" type="checkbox" val="t" />
+						<column label="이력저장안함" name="history" value="history" type="checkbox" val="t" />
+					</row>
+					<row>
+						<column label="암호화" name="encrypted" value="encrypted" type="checkbox" disabled="disabled" val="t" />
+						<column label="자동저장" name="autosave" value="autosave" type="checkbox" disabled="disabled" val="t" />
+					</row>
+				</tab>
+			</middle>
+			<bottom>
+				<left>
+					<link label="삭제" path="/memo/deleteAutoSave" method="post" type="submit" msg="자동저장된 게시물을 삭제하시겠습니까?" name="delete" icon="delete" class="material-icons md-18 delete">
+						<params>
+							<param name="memo_history_id" value="memo_history_id" />
+						</params>
+					</link>
+				</left>
+			</bottom>
+		</layout>
+		<redirect path="/memo/detail" cond="${param.parent_id} isEmpty">
+			<param name="memo_id" type="query" value="memo_id" />
+		</redirect>
+		<redirect path="/memo/detail" cond="${param.parent_id} isNotEmpty">
+			 <param name="memo_id" type="query" value="memo_id" />
+			 <param name="parent_id" type="query" value="parent_id" />
+		</redirect>
+	</query>
+	<query id="autosave" funcType="insert" label="자동저장" auth="${header.method} equals 'POST'">
+		<header>
+		</header>
+		<tables>
+			<table tableName="memo_history" name="memo_history" label="메모 이력관리">
+				<column name="memo_history_id" value="param.memo_history_id" datatype="int" primary="true" insert="sequence.nextval('memo_history$memo_history_id')" />
+				<column name="title" value="param.title" datatype="varchar" />
+				<column name="contents" value="param.contents" datatype="varchar" />
+				<column name="marked" value="param.marked" datatype="boolean" />
+				<column name="encrypted" value="param.encrypted" datatype="boolean" />
+				<column name="memo_id" value="param.memo_id" datatype="int" />
+				<column name="autosave" value="param.autosave" datatype="boolean" />
+				<column name="parent_id" value="param.parent_id" datatype="int" />
+				<column name="insert_date" only="insert" value="sql.now()" datatype="timestamp" />
+				<column name="insert_id" only="insert" value="prop.logined_user" datatype="varchar" />
+				<column name="insert_ip" only="insert" value="header.remote_addr" datatype="varchar" />
+				<column name="update_date" value="sql.now()" datatype="timestamp" />
+				<column name="update_id" value="prop.logined_user" datatype="varchar" />
+				<column name="update_ip" value="header.remote_addr" datatype="varchar" />
+			</table>
+		</tables>
+		<layout msg="변경사항을 저장하시겠습니까?">
+			<top>
+			</top>
+			<middle>
+				<tab name="memo_history" label="메모 이력관리">
+					<row>
+						<column label="제목" name="title" value="title" />
+					</row>
+					<row>
+						<column label="내용" name="contents" value="contents" type="textarea" />
+					</row>
+					<row>
+						<column label="마크다운" name="marked" value="marked" type="checkbox" val="t" />
+					</row>
+					<row>
+						<column label="암호화" name="encrypted" value="encrypted" type="checkbox" val="t" />
+					</row>
+					<row>
+						<column label="메모ID" name="memo_id" value="memo_id" />
+					</row>
+					<row>
+						<column label="자동저장" name="autosave" value="autosave" type="checkbox" val="t" />
+					</row>
+				</tab>
+			</middle>
+			<bottom>
+			</bottom>
+		</layout>
+		<redirect path="/memo/list" />
+	</query>
+	<query id="detail" funcType="detail" label="메모(${/document/rows/row/title})">
+		<header>
+			<style src="https://fonts.googleapis.com/icon?family=Material+Icons" />
+			<style src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/default.min.css" />
+			<style src="../../css/memo.detail.css" />
+			<style src="../../css/memo.pwd_area.css" />
+			<style src="../../css/memo.message_area.css" />
+			<style><![CDATA[
+<xsl:if test="/document/rows[@id='memo']/row/encrypted = 't'">
+div#pwd_area {
+	display:block;
+}
+</xsl:if>
+<xsl:if test="not(/document/rows[@id='memo_history']/row)">
+table#memo_history {
+	display:none;
+}
+</xsl:if>
+<xsl:choose>
+<xsl:when test="/document/params[@for='data']/parent_id">
+div.bottom div.right form.insert button,
+div.top div.left form.list button,
+table#memo_child
+{
+	display:none;
+}
+</xsl:when>
+<xsl:otherwise>
+div.top div.left form.detail button {
+	display:none;
+}
+</xsl:otherwise>
+</xsl:choose>
+			]]></style>
+			<script><![CDATA[
+var isMarked = false;
+<xsl:if test="/document/rows[@id='memo']/row/marked = 't'">
+isMarked = true;
+</xsl:if>
+var isEncrypted = false;
+<xsl:if test="/document/rows[@id='memo']/row/encrypted = 't'">
+isEncrypted = true;
+</xsl:if>
+var isChildEncrypted = false;
+<xsl:if test="/document/rows[@id='memo_child']/row/encrypted = 't'">
+isChildEncrypted = true;
+</xsl:if>
+var isHistoryEncrypted = false;
+<xsl:if test="/document/rows[@id='memo_history']/row/encrypted = 't'">
+isHistoryEncrypted = true;
+</xsl:if>
+			]]></script>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" />
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" />
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js" />
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.8/sjcl.js" />
+			<script src="https://cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" />
+			<script src="https://cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" />
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/4.0.2/diff.min.js" />
+			<script src="../../js/memo.detail.js"  name="check_submit" override="true" />
+			<script src="../../js/memo.message_area.js" override="true" />
+			<script src="../../js/memo.pwd_area.js" override="true" />
+			<xi:include href="memo/pwd_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+			<xi:include href="memo/message_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+			<bottom><![CDATA[
+<div id="diff">
+	<i class='material-icons close'>close</i>
+	<pre id="display"></pre>
+</div>
+			]]></bottom>
+		</header>
+		<commands>
+			<command name="memo">
+				<sql>
+					select
+						memo_id
+						, title
+						, contents
+						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
+						, to_char(insert_date, 'YYYY-MM-DD HH24:MI:SS') as insert_date
+						, marked
+						, encrypted
+						, parent_id
+					from memo
+						where memo_id = ? and insert_id = ?
+				</sql>
+				<params>
+					<param default="null" name="memo_id" datatype="int" value="param.memo_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+				</params>
+			</command>
+			<command name="memo_history" multi="true">
+				<sql>
+					select
+						memo_history_id
+						, case when encrypted = true then '암호화된 게시물' else title end as title
+						, case when encrypted = true then title else '' end as encrypted_title
+						, contents
+						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
+						, marked
+						, encrypted
+					from memo_history
+						where memo_id = ? and insert_id = ?
+						and autosave = false
+						order by memo_history_id desc
+				</sql>
+				<params>
+					<param default="null" name="memo_id" datatype="int" value="param.memo_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+				</params>
+			</command>
+			<command name="memo_child" multi="true">
+				<sql>
+					select
+						memo_id
+						, case when encrypted = true then '암호화된 게시물' else title end as title
+						, case when encrypted = true then title else '' end as encrypted_title
+						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
+						, encrypted
+						, parent_id
+					from memo
+						where parent_id = ?
+							and insert_id = ?
+						order by memo_id desc
+				</sql>
+				<params>
+					<param default="null" name="parent_id" datatype="int" value="param.memo_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+				</params>
+			</command>
+		</commands>
+		<layout>
+			<top>
+				<left>
+					<link name="list" label="목록" path="/memo/list" icon="list" class="material-icons md-18 list" />
+					<link name="detail" label="목록" path="/memo/detail" icon="list" class="material-icons md-18 list">
+						<params>
+							<param name="memo_id" type="query" value="parent_id" />
+						</params>
+					</link>
+				</left>
+				<center />
+				<right>
+					<link name="update" label="수정" path="/memo/insert"  icon="create" class="material-icons md-18 create">
+						<params>
+							<param name="memo_id" type="query" value="memo_id" />
+							<param name="parent_id" type="query" value="parent_id" />
+						</params>
+					</link>
+				</right>
+			</top>
+			<middle>
+				<tab name="memo" label="메모">
+					<row>
+						<column label="제목" name="title" colspan="3" />
+					</row>
+					<row>
+						<column label="내용" name="contents" colspan="4" islabel="false" />
+						<column label="내용" name="contents2" colspan="4" islabel="false" />
+					</row>
+					<row>
+						<column label="입력" name="insert_date" />
+						<column label="수정" name="update_date" />
+					</row>
+				</tab>
+				<tab name="memo_history" label="변경이력" single="true">
+					<row>
+						<column label="고유번호" name="memo_history_id" />
+						<column label="제목" name="title" />
+						<column label="암호화된 제목" name="encrypted_title" />
+						<column label="마지막수정일시" name="update_date" />
+						<column label="마크다운" name="marked" />
+						<column label="암호화" name="encrypted" />
+					</row>
+					<row>
+						<column label="내용" name="contents" colspan="2" islabel="false" />
+						<column label="내용" name="contents2" colspan="2" islabel="false" />
+					</row>
+				</tab>
+				<tab name="memo_child" label="추가게시물" single="true">
+					<row>
+						<column label="제목" name="title">
+							<link path="/memo/detail">
+								<param name="memo_id" type="query" value="memo_id" />
+								<param name="parent_id" type="query" value="parent_id" />
+							</link>
+						</column>
+						<column label="암호화된 제목" name="encrypted_title" />
+						<column label="마지막수정일시" name="update_date" />
+					</row>
+				</tab>
+			</middle>
+			<bottom>
+				<left>
+					<link label="삭제" path="/memo/delete" method="post" type="submit" msg="정말로 삭제하시겠습니까?" icon="delete_sweep" class="material-icons md-18 delete_sweep">
+						<params>
+							<param name="memo_id" type="query" value="memo_id" />
+						</params>
+					</link>
+				</left>
+				<right>
+					<link name="insert" label="추가" path="/memo/insert" icon="add" class="material-icons md-18 add">
+						<params>
+							<param name="parent_id" type="query" value="memo_id" />
+						</params>
+					</link>
+				</right>
+			</bottom>
+			
+		</layout>
+	</query>
+	<query id="autosaved" funcType="detail" label="메모(${/document/rows/row/title})">
+		<header>
+		</header>
+		<commands>
+			<command name="memo_history" multi="true">
+				<sql>
+					select
+						memo_history_id
+						, title
+						, parent_id
+<tile cond="${param.memo_history_id} isNotEmpty">
+						, contents
+</tile>
+						, marked
+						, encrypted
+					from memo_history
+					where autosave = true
+						and insert_id = ?
+<tile cond="${param.memo_id} isEmpty">
+						and memo_id is null
+</tile>
+<tile cond="${param.memo_id} isNotEmpty">
+						and memo_id = ?
+</tile>
+<tile cond="${param.memo_history_id} isNotEmpty">
+						and memo_history_id = ?
+</tile>
+<tile cond="${param.parent_id} isNotEmpty">
+						and parent_id = ?
+</tile>
+<tile cond="${param.parent_id} isNotEmpty">
+						and parent_id is null
+</tile>
+					order by memo_history_id desc
+					limit 1
+				</sql>
+				<params>
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param default="null" name="memo_id" datatype="int" value="param.memo_id" cond="${param.memo_id} isNotEmpty" />
+					<param default="null" name="memo_history_id" datatype="int" value="param.memo_history_id" cond="${param.memo_history_id} isNotEmpty" />
+					<param default="null" name="parent_id" datatype="int" value="param.parent_id" cond="${param.parent_id} isNotEmpty" />
+				</params>
+			</command>
+		</commands>
+		<layout />
+	</query>
+	<query id="delete" funcType="delete" label="메모 삭제">
+		<tables>
+			<table tableName="memo" name="memo">
+				<column name="memo_id" primary="true" value="param.memo_id" datatype="int" />
+				<where>
+					<sql>
+						insert_id = ?
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
+			</table>
+			<table tableName="memo" name="memo_child">
+				<column name="parent_id" foreign="true" value="param.memo_id" datatype="int" />
+				<where>
+					<sql>
+						insert_id = ?
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
+			</table>
+			<table tableName="memo_history" name="memo_history">
+				<column name="memo_id" foreign="true" value="param.memo_id" datatype="int" />
+				<where>
+					<sql>
+						insert_id = ?
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
+			</table>
+			<table tableName="memo_history" name="memo_child_history">
+				<column name="parent_id" foreign="true" value="param.memo_id" datatype="int" />
+				<where>
+					<sql>
+						insert_id = ?
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
+			</table>
+		</tables>
+		<redirect path="/memo/list" />
+	</query>
+	<query id="deleteAutoSave" funcType="delete" label="자동저장 삭제">
+		<tables>
+			<table tableName="memo_history" name="memo_history">
+				<column name="memo_history_id" foreign="true" value="param.memo_history_id" datatype="int" />
+				<where>
+					<sql>
+						insert_id = ?
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
+			</table>
+		</tables>
+		<redirect path="/memo/list" />
+	</query>
+</querys>
+
