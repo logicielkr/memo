@@ -58,6 +58,14 @@ license or under the GNU GPL, version 2.0. (https://github.com/bitwiseshiftleft/
 - CDN : https://cdnjs.cloudflare.com/ajax/libs/jsdiff/4.0.2/diff.min.js
 - 용도 : 이력관리
 
+<!--
+### 1.8. JavaScript Cookie (https://github.com/js-cookie/js-cookie)
+
+- License : MIT license(https://github.com/js-cookie/js-cookie/blob/master/LICENSE)
+- CDN : https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js
+- Language : Javascript
+-->
+
 ## 2. 서버 라이브러리
 
 ### 2.1. Apache Commons FileUpload (https://commons.apache.org/proper/commons-fileupload/)
@@ -98,5 +106,7 @@ license or under the GNU GPL, version 2.0. (https://github.com/bitwiseshiftleft/
 
 - License : PostgreSQL License (https://www.postgresql.org/about/licence/)
 - Language : C
+
+
 
 <a name="footnote_001">[1]</a>: 2020.09.23. 현재 1.0.1 버전이 최신 버전이지만, InternetExplorer 11 에서 링크를 처리하는 구문에 오류가 있다.
