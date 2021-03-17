@@ -49,13 +49,13 @@ function loadMemoHistoryById() {
 		contentType: false,
 		type: 'GET',
 		success: function(result){
-			var obj = parse_xml_document(result);
-			if(obj && obj.rows && obj.rows.length > 0 && obj.rows[0].memo_history_id) {
+			var obj = parse_graha_xml_document(result);
+			if(obj && obj.rows && obj.rows["memo_history"] && obj.rows["memo_history"].length > 0 && obj.rows["memo_history"][0].memo_history_id) {
 				PwdArea.hide();
 				MessageArea.confirm(
 					"자동저장된 게시물을 확인하시겠습니까?", 
 					function() {
-						memoHistoryId = obj.rows[0].memo_history_id;
+						memoHistoryId = obj.rows["memo_history"][0].memo_history_id;
 						loadMemoHistory();
 						return;
 					},
@@ -88,34 +88,34 @@ function loadMemoHistory() {
 		contentType: false,
 		type: 'GET',
 		success: function(result) {
-			var obj = parse_xml_document(result);
-			if(obj && obj.rows && obj.rows.length > 0) {
-				if(obj.rows[0].memo_history_id) {
-					$("form#insert input.memo_history_id").val(obj.rows[0].memo_history_id);
-					$("form.delete input.memo_history_id").val(obj.rows[0].memo_history_id);
+			var obj = parse_graha_xml_document(result);
+			if(obj && obj.rows && obj.rows["memo_history"] && obj.rows["memo_history"].length > 0) {
+				if(obj.rows["memo_history"][0].memo_history_id) {
+					$("form#insert input.memo_history_id").val(obj.rows["memo_history"][0].memo_history_id);
+					$("form.delete input.memo_history_id").val(obj.rows["memo_history"][0].memo_history_id);
 					$("form.delete button[type='submit']").show();
 				}
-				if(obj.rows[0].memo_id) {
-					$("form#insert input.memo_id").val(obj.rows[0].memo_id);
+				if(obj.rows["memo_history"][0].memo_id) {
+					$("form#insert input.memo_id").val(obj.rows["memo_history"][0].memo_id);
 				}
-				if(obj.rows[0].parent_id) {
-					$("form#insert input.parent_id").val(obj.rows[0].parent_id);
+				if(obj.rows["memo_history"][0].parent_id) {
+					$("form#insert input.parent_id").val(obj.rows["memo_history"][0].parent_id);
 				}
-				if(obj.rows[0].title) {
-					$("form#insert input.title").val(obj.rows[0].title);
+				if(obj.rows["memo_history"][0].title) {
+					$("form#insert input.title").val(obj.rows["memo_history"][0].title);
 				}
-				if(obj.rows[0].contents) {
-					$("form#insert textarea.contents").val(obj.rows[0].contents);
+				if(obj.rows["memo_history"][0].contents) {
+					$("form#insert textarea.contents").val(obj.rows["memo_history"][0].contents);
 				}
-				if(obj.rows[0].marked) {
-					if(obj.rows[0].marked == "t") {
+				if(obj.rows["memo_history"][0].marked) {
+					if(obj.rows["memo_history"][0].marked == "t") {
 						$("form#insert input.marked").prop("checked", true);
 					} else {
 						$("form#insert input.marked").prop("checked", false);
 					}
 				}
-				if(obj.rows[0].encrypted) {
-					if(obj.rows[0].encrypted == "t") {
+				if(obj.rows["memo_history"][0].encrypted) {
+					if(obj.rows["memo_history"][0].encrypted == "t") {
 						$("form#insert input.encrypted").prop("checked", true);
 						isEncrypted = true;
 					} else {
@@ -305,10 +305,10 @@ function autoSave(gbn) {
 			enctype: 'multipart/form-data',
 			data: formData,
 			success: function(result) {
-				var obj = parse_xml_document(result);
+				var obj = parse_graha_xml_document(result);
 				if(gbn) {
-					if(obj && obj.rows && obj.rows.length > 0 && obj.rows[0].memo_history_id) {
-						$("form#insert input.memo_history_id").val(obj.rows[0].memo_history_id);
+					if(obj && obj.rows && obj.rows["memo_history"] && obj.rows["memo_history"].length > 0 && obj.rows["memo_history"][0].memo_history_id) {
+						$("form#insert input.memo_history_id").val(obj.rows["memo_history"][0].memo_history_id);
 					}
 				} else if(
 					obj && 
