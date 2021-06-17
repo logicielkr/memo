@@ -58,8 +58,19 @@ license or under the GNU GPL, version 2.0. (https://github.com/bitwiseshiftleft/
 - CDN : https://cdnjs.cloudflare.com/ajax/libs/jsdiff/4.0.2/diff.min.js
 - 용도 : 이력관리
 
+### 1.8. Material Icons(https://fonts.google.com/icons)
+- License : Apache license 2.0
+- Language : css
+- CDN : https://fonts.googleapis.com/icon?family=Material+Icons
+- 용도 : 아이콘
+
 <!--
-### 1.8. JavaScript Cookie (https://github.com/js-cookie/js-cookie)
+https://google.github.io/material-design-icons/
+https://github.com/google/material-design-icons
+-->
+
+<!--
+### 1.9. JavaScript Cookie (https://github.com/js-cookie/js-cookie)
 
 - License : MIT license(https://github.com/js-cookie/js-cookie/blob/master/LICENSE)
 - CDN : https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js
@@ -87,6 +98,7 @@ license or under the GNU GPL, version 2.0. (https://github.com/bitwiseshiftleft/
 - License : LGPLv3 (https://github.com/logicielkr/xdbc/blob/master/LICENSE)
 - GitHUB : https://github.com/logicielkr/xdbc
 - Language : Java
+- 데이타베이스를 프로그램적으로 2중화하거나 디버깅 용도로만 필요하다.
 
 ### 2.5. Graha (http://graha.kr/)
 
