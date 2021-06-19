@@ -81,6 +81,7 @@ isEncrypted = true;
 					<column label="제목" name="title">
 						<link path="/memo/detail">
 							<param name="memo_id" type="query" value="memo_id" />
+							<param name="page" type="param" value="page" />
 						</link>
 					</column>
 					<column label="마지막수정일시" name="update_date" />
@@ -260,6 +261,7 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 							<param name="memo_id" type="query" value="memo_id" />
 							<param name="parent_id" value="parent_id" />
 							<param name="memo_history_id" value="memo_history_id" />
+							<param name="page" value="page" />
 						</params>
 					</link>
 				</right>
@@ -294,10 +296,12 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 		</layout>
 		<redirect path="/memo/detail" cond="${param.parent_id} isEmpty">
 			<param name="memo_id" type="query" value="memo_id" />
+			<param name="page" type="param" value="page" />
 		</redirect>
 		<redirect path="/memo/detail" cond="${param.parent_id} isNotEmpty">
 			 <param name="memo_id" type="query" value="memo_id" />
 			 <param name="parent_id" type="query" value="parent_id" />
+			 <param name="page" type="param" value="page" />
 		</redirect>
 	</query>
 	<query id="autosave" funcType="insert" label="자동저장" auth="${header.method} equals 'POST'">
@@ -486,10 +490,15 @@ isHistoryEncrypted = true;
 		<layout>
 			<top>
 				<left>
-					<link name="list" label="목록" path="/memo/list" icon="list" class="material-icons md-18 list" />
+					<link name="list" label="목록" path="/memo/list" icon="list" class="material-icons md-18 list">
+						<params>
+							<param name="page" type="param" value="page" />
+						</params>
+					</link>
 					<link name="detail" label="목록" path="/memo/detail" icon="list" class="material-icons md-18 list">
 						<params>
 							<param name="memo_id" type="query" value="parent_id" />
+							<param name="page" type="param" value="page" />
 						</params>
 					</link>
 				</left>
@@ -499,6 +508,7 @@ isHistoryEncrypted = true;
 						<params>
 							<param name="memo_id" type="query" value="memo_id" />
 							<param name="parent_id" type="query" value="parent_id" />
+							<param name="page" type="param" value="page" />
 						</params>
 					</link>
 				</right>
@@ -549,6 +559,7 @@ isHistoryEncrypted = true;
 					<link label="삭제" path="/memo/delete" method="post" type="submit" msg="정말로 삭제하시겠습니까?" icon="delete_sweep" class="material-icons md-18 delete_sweep">
 						<params>
 							<param name="memo_id" type="query" value="memo_id" />
+							<param name="parent_id" type="query" value="parent_id" />
 						</params>
 					</link>
 				</left>
@@ -556,6 +567,7 @@ isHistoryEncrypted = true;
 					<link name="insert" label="추가" path="/memo/insert" icon="add" class="material-icons md-18 add">
 						<params>
 							<param name="parent_id" type="query" value="memo_id" />
+							<param name="page" type="param" value="page" />
 						</params>
 					</link>
 				</right>
@@ -656,7 +668,10 @@ isHistoryEncrypted = true;
 				</where>
 			</table>
 		</tables>
-		<redirect path="/memo/list" />
+		<redirect path="/memo/list" cond="${param.parent_id} isEmpty" />
+		<redirect path="/memo/detail" cond="${param.parent_id} isNotEmpty">
+			 <param name="memo_id" type="param" value="parent_id" />
+		</redirect>
 	</query>
 	<query id="deleteAutoSave" funcType="delete" label="자동저장 삭제">
 		<tables>
