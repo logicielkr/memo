@@ -80,7 +80,7 @@ function mark() {
 		smartypants: false,
 		xhtml: false
 	});
-	var text = marked(selectedContents.text());
+	var text = marked.parse(selectedContents.text());
 	selectedContents.hide();
 	selectedContents2.show();
 	selectedContents2.html(text);
