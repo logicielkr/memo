@@ -5,6 +5,8 @@
 		<prop name="logined_user" value="guest" />
 		<prop name="logined_user" value="${session.user_id}" cond="${session.user_id} isNotEmpty" />
 		<prop name="logined_user" value="${header.remote_user}" cond="${header.remote_user} isNotEmpty" />
+		<!--prop name="memo.save.directory" value="${system.context.root.path}WEB-INF/memo/" />
+		<prop name="memo.backup.directory" value="${system.context.root.path}WEB-INF/memo/" /-->
 		<style>
 button i {
 	vertical-align: middle;
@@ -42,7 +44,7 @@ isEncrypted = true;
 						, case when encrypted = true then title else '' end as encrypted_title
 						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
 						, encrypted
-					from memo
+					from memo.memo
 					where insert_id = ?
 					and parent_id is null
 <tile cond="${param.search} isNotEmpty">
@@ -51,7 +53,7 @@ isEncrypted = true;
 					order by memo_id desc
 				</sql>
 				<sql_cnt>
-					select count(*) from memo where insert_id = ? and parent_id is null
+					select count(*) from memo.memo where insert_id = ? and parent_id is null
 <tile cond="${param.search} isNotEmpty">
 					and (title like '%' || ? || '%' or contents like '%' || ? || '%')
 </tile>
@@ -149,7 +151,7 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 		<processors>
 			<processor type="query" after="true" method="POST" cond="${param.memo_history_id} isNotEmpty">
 				<sql>
-					delete from memo_history where memo_history_id = ? and insert_id = ?
+					delete from memo.memo_history where memo_history_id = ? and insert_id = ?
 				</sql>
 				<params>
 					<param name="memo_history_id" datatype="int" value="param.memo_history_id" default="-1" />
@@ -158,7 +160,7 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 			</processor>
 			<processor type="query" before="true" method="POST" cond="${prop.savehistory} equals 'yy'">
 				<sql>
-					insert into memo_history (
+					insert into memo.memo_history (
 						memo_history_id,
 						title,
 						contents,
@@ -188,12 +190,12 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 						update_date,
 						update_id,
 						update_ip
-					from memo where memo_id = ?
+					from memo.memo where memo_id = ?
 					and (md5(trim(title)) != md5(trim(?)) or md5(trim(contents)) != md5(trim(?)))
 					and insert_id = ?
 				</sql>
 				<params>
-					<param name="memo_history_id" datatype="int" value="sequence.nextval('memo_history$memo_history_id')" default="-1" />
+					<param name="memo_history_id" datatype="int" value="sequence.nextval('memo.memo_history$memo_history_id')" default="-1" />
 					<param name="memo_id" datatype="int" value="param.memo_id" default="-1" />
 					<param name="title" datatype="varchar" value="param.title" />
 					<param name="contents" datatype="varchar" value="param.contents" />
@@ -202,9 +204,9 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 			</processor>
 			<processor type="query" before="true" method="GET" cond="${param.memo_id} isNotEmpty">
 				<sql>
-					delete from memo_history where memo_id = ? and insert_id = ?
+					delete from memo.memo_history where memo_id = ? and insert_id = ?
 					and exists (
-						select * from memo where memo.memo_id = ? and memo.insert_id = ?
+						select * from memo.memo where memo.memo_id = ? and memo.insert_id = ?
 						and md5(memo.title) = md5(memo_history.title)
 						and md5(memo.contents) = md5(memo_history.contents)
 					)
@@ -221,8 +223,8 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 			<param name="title" not-null="true" msg="제목은 필수 항목입니다!" />
 		</validation>
 		<tables>
-			<table tableName="memo" name="memo" label="메모">
-				<column name="memo_id" value="param.memo_id" datatype="int" primary="true" insert="sequence.nextval('memo$memo_id')" />
+			<table tableName="memo.memo" name="memo" label="메모">
+				<column name="memo_id" value="param.memo_id" datatype="int" primary="true" insert="sequence.nextval('memo.memo$memo_id')" />
 				<column name="title" value="param.title" datatype="varchar" />
 				<column name="contents" value="param.contents" datatype="varchar" />
 				<column name="marked" value="param.marked" datatype="boolean" />
@@ -244,6 +246,16 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 				</where>
 			</table>
 		</tables>
+		<!--files>
+			<file name="memo.file" path="${prop.memo.save.directory}/attach/${query.memo.memo_id}" append="3" backup="${prop.memo.backup.directory}/backup/${query.memo.memo_id}" />
+			<auth check="${result} > 0">
+				<sql>select count(*) from memo.memo where insert_id = ? and memo_id = ?</sql>
+				<params>
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="memo_id" datatype="int" value="param.query.memo.memo_id" />
+				</params>
+			</auth>
+		</files-->
 		<layout msg="변경사항을 저장하시겠습니까?">
 			<top>
 				<left>
@@ -308,8 +320,8 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 		<header>
 		</header>
 		<tables>
-			<table tableName="memo_history" name="memo_history" label="메모 이력관리">
-				<column name="memo_history_id" value="param.memo_history_id" datatype="int" primary="true" insert="sequence.nextval('memo_history$memo_history_id')" />
+			<table tableName="memo.memo_history" name="memo_history" label="메모 이력관리">
+				<column name="memo_history_id" value="param.memo_history_id" datatype="int" primary="true" insert="sequence.nextval('memo.memo_history$memo_history_id')" />
 				<column name="title" value="param.title" datatype="varchar" />
 				<column name="contents" value="param.contents" datatype="varchar" />
 				<column name="marked" value="param.marked" datatype="boolean" />
@@ -439,7 +451,7 @@ isHistoryEncrypted = true;
 						, marked
 						, encrypted
 						, parent_id
-					from memo
+					from memo.memo
 						where memo_id = ? and insert_id = ?
 				</sql>
 				<params>
@@ -457,7 +469,7 @@ isHistoryEncrypted = true;
 						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
 						, marked
 						, encrypted
-					from memo_history
+					from memo.memo_history
 						where memo_id = ? and insert_id = ?
 						and autosave = false
 						order by memo_history_id desc
@@ -476,7 +488,7 @@ isHistoryEncrypted = true;
 						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
 						, encrypted
 						, parent_id
-					from memo
+					from memo.memo
 						where parent_id = ?
 							and insert_id = ?
 						order by memo_id desc
@@ -487,6 +499,16 @@ isHistoryEncrypted = true;
 				</params>
 			</command>
 		</commands>
+		<!--files>
+			<file name="memo.file" path="${prop.memo.save.directory}/attach/${query.memo.memo_id}" backup="${prop.memo.backup.directory}/attach/${query.memo.memo_id}" />
+			<auth check="${result} > 0">
+				<sql>select count(*) from memo.memo where insert_id = ? and memo_id = ?</sql>
+				<params>
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="memo_id" datatype="int" value="param.query.memo.memo_id" />
+				</params>
+			</auth>
+		</files-->
 		<layout>
 			<top>
 				<left>
@@ -590,7 +612,7 @@ isHistoryEncrypted = true;
 </tile>
 						, marked
 						, encrypted
-					from memo_history
+					from memo.memo_history
 					where autosave = true
 						and insert_id = ?
 <tile cond="${param.memo_id} isEmpty">
@@ -623,7 +645,7 @@ isHistoryEncrypted = true;
 	</query>
 	<query id="delete" funcType="delete" label="메모 삭제">
 		<tables>
-			<table tableName="memo" name="memo">
+			<table tableName="memo.memo" name="memo">
 				<column name="memo_id" primary="true" value="param.memo_id" datatype="int" />
 				<where>
 					<sql>
@@ -634,7 +656,7 @@ isHistoryEncrypted = true;
 					</params>
 				</where>
 			</table>
-			<table tableName="memo" name="memo_child">
+			<table tableName="memo.memo" name="memo_child">
 				<column name="parent_id" foreign="true" value="param.memo_id" datatype="int" />
 				<where>
 					<sql>
@@ -645,7 +667,7 @@ isHistoryEncrypted = true;
 					</params>
 				</where>
 			</table>
-			<table tableName="memo_history" name="memo_history">
+			<table tableName="memo.memo_history" name="memo_history">
 				<column name="memo_id" foreign="true" value="param.memo_id" datatype="int" />
 				<where>
 					<sql>
@@ -656,7 +678,7 @@ isHistoryEncrypted = true;
 					</params>
 				</where>
 			</table>
-			<table tableName="memo_history" name="memo_child_history">
+			<table tableName="memo.memo_history" name="memo_child_history">
 				<column name="parent_id" foreign="true" value="param.memo_id" datatype="int" />
 				<where>
 					<sql>
@@ -668,6 +690,9 @@ isHistoryEncrypted = true;
 				</where>
 			</table>
 		</tables>
+		<!--files>
+			<file name="memo.file" path="${prop.memo.save.directory}/attach/${param.memo_id}" backup="${prop.memo.backup.directory}/attach/${param.memo_id}" />
+		</files-->
 		<redirect path="/memo/list" cond="${param.parent_id} isEmpty" />
 		<redirect path="/memo/detail" cond="${param.parent_id} isNotEmpty">
 			 <param name="memo_id" type="param" value="parent_id" />
@@ -675,7 +700,7 @@ isHistoryEncrypted = true;
 	</query>
 	<query id="deleteAutoSave" funcType="delete" label="자동저장 삭제">
 		<tables>
-			<table tableName="memo_history" name="memo_history">
+			<table tableName="memo.memo_history" name="memo_history">
 				<column name="memo_history_id" foreign="true" value="param.memo_history_id" datatype="int" />
 				<where>
 					<sql>
