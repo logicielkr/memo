@@ -5,8 +5,8 @@
 		<prop name="logined_user" value="guest" />
 		<prop name="logined_user" value="${session.user_id}" cond="${session.user_id} isNotEmpty" />
 		<prop name="logined_user" value="${header.remote_user}" cond="${header.remote_user} isNotEmpty" />
-		<!--prop name="memo.save.directory" value="${system.context.root.path}WEB-INF/memo/" />
-		<prop name="memo.backup.directory" value="${system.context.root.path}WEB-INF/memo/" /-->
+		<!--prop name="memo.save.directory" value="${system.context.root.path}WEB-INF/memo" />
+		<prop name="memo.backup.directory" value="${system.context.root.path}WEB-INF/memo" /-->
 		<style>
 button i {
 	vertical-align: middle;
