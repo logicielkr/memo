@@ -44,22 +44,36 @@ isEncrypted = true;
 						, case when encrypted = true then title else '' end as encrypted_title
 						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
 						, encrypted
-					from memo.memo
+					from memo.memo as memo
 					where insert_id = ?
 					and parent_id is null
 <tile cond="${param.search} isNotEmpty">
-					and (title like '%' || ? || '%' or contents like '%' || ? || '%')
+					and (
+						title like '%' || ? || '%' or contents like '%' || ? || '%'
+						or exists (
+							select * from memo.memo as memo_child where memo_child.parent_id = memo.memo_id
+							and (title like '%' || ? || '%' or contents like '%' || ? || '%')
+						)
+					)
 </tile>
 					order by memo_id desc
 				</sql>
 				<sql_cnt>
-					select count(*) from memo.memo where insert_id = ? and parent_id is null
+					select count(*) from memo.memo as memo where insert_id = ? and parent_id is null
 <tile cond="${param.search} isNotEmpty">
-					and (title like '%' || ? || '%' or contents like '%' || ? || '%')
+					and (
+						title like '%' || ? || '%' or contents like '%' || ? || '%'
+						or exists (
+							select * from memo.memo as memo_child where memo_child.parent_id = memo.memo_id
+							and (title like '%' || ? || '%' or contents like '%' || ? || '%')
+						)
+					)
 </tile>
 				</sql_cnt>
 				<params>
 					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
+					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
 					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
 					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
 				</params>
