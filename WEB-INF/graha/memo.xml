@@ -109,8 +109,11 @@ isEncrypted = true;
 			</bottom>
 		</layout>
 	</query>
-	<query id="insert" funcType="insert" label="메모">
+	<query id="insert" funcType="insert" label="메모 추가">
 		<header>
+			<labels>
+				<label text="메모 수정(${/document/rows/row/title})" cond="${param.memo_id} exists" />
+			</labels>
 			<style src="../../css/memo.insert.css" />
 			<style src="../../css/memo.pwd_area.css" />
 			<style src="../../css/memo.message_area.css" />
