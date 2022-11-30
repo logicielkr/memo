@@ -53,6 +53,7 @@ isEncrypted = true;
 						or exists (
 							select * from memo.memo as memo_child where memo_child.parent_id = memo.memo_id
 							and (title like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%' or contents like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%')
+							and insert_id = ?
 						)
 					)
 </tile>
@@ -66,6 +67,7 @@ isEncrypted = true;
 						or exists (
 							select * from memo.memo as memo_child where memo_child.parent_id = memo.memo_id
 							and (title like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%' or contents like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%')
+							and insert_id = ?
 						)
 					)
 </tile>
@@ -76,6 +78,7 @@ isEncrypted = true;
 					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
 					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
 					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${param.search} isNotEmpty" />
 				</params>
 			</command>
 		</commands>
@@ -352,6 +355,14 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 				<column name="update_date" value="sql.now()" datatype="timestamp" />
 				<column name="update_id" value="prop.logined_user" datatype="varchar" />
 				<column name="update_ip" value="header.remote_addr" datatype="varchar" />
+				<where>
+					<sql>
+						insert_id = ?
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
 			</table>
 		</tables>
 		<layout msg="변경사항을 저장하시겠습니까?">
