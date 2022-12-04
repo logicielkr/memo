@@ -101,6 +101,7 @@ isEncrypted = true;
 						<link path="/memo/detail">
 							<param name="memo_id" type="query" value="memo_id" />
 							<param name="page" type="param" value="page" />
+							<param name="search" type="param" value="search" />
 						</link>
 					</column>
 					<column label="마지막수정일시" name="update_date" />
@@ -279,10 +280,17 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 		<layout msg="변경사항을 저장하시겠습니까?">
 			<top>
 				<left>
-					<link name="list" label="목록" path="/memo/list" icon="list" class="material-icons md-18 list" />
+					<link name="list" label="목록" path="/memo/list" icon="list" class="material-icons md-18 list">
+						<params>
+							<param name="page" type="param" value="page" />
+							<param name="search" type="param" value="search" />
+						</params>
+					</link>
 					<link name="detail" label="목록" path="/memo/detail" icon="list" class="material-icons md-18 list">
 						<params>
 							<param name="memo_id" type="param" value="parent_id" />
+							<param name="page" type="param" value="page" />
+							<param name="search" type="param" value="search" />
 						</params>
 					</link>
 				</left>
@@ -294,6 +302,7 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 							<param name="parent_id" value="parent_id" />
 							<param name="memo_history_id" value="memo_history_id" />
 							<param name="page" value="page" />
+							<param name="search" type="param" value="search" />
 						</params>
 					</link>
 				</right>
@@ -329,11 +338,13 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 		<redirect path="/memo/detail" cond="${param.parent_id} isEmpty">
 			<param name="memo_id" type="query" value="memo_id" />
 			<param name="page" type="param" value="page" />
+			<param name="search" type="param" value="search" />
 		</redirect>
 		<redirect path="/memo/detail" cond="${param.parent_id} isNotEmpty">
 			 <param name="memo_id" type="query" value="memo_id" />
 			 <param name="parent_id" type="query" value="parent_id" />
 			 <param name="page" type="param" value="page" />
+			 <param name="search" type="param" value="search" />
 		</redirect>
 	</query>
 	<query id="autosave" funcType="insert" label="자동저장" auth="${header.method} equals 'POST'">
@@ -365,34 +376,7 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 				</where>
 			</table>
 		</tables>
-		<layout msg="변경사항을 저장하시겠습니까?">
-			<top>
-			</top>
-			<middle>
-				<tab name="memo_history" label="메모 이력관리">
-					<row>
-						<column label="제목" name="title" value="title" />
-					</row>
-					<row>
-						<column label="내용" name="contents" value="contents" type="textarea" />
-					</row>
-					<row>
-						<column label="마크다운" name="marked" value="marked" type="checkbox" val="t" />
-					</row>
-					<row>
-						<column label="암호화" name="encrypted" value="encrypted" type="checkbox" val="t" />
-					</row>
-					<row>
-						<column label="메모ID" name="memo_id" value="memo_id" />
-					</row>
-					<row>
-						<column label="자동저장" name="autosave" value="autosave" type="checkbox" val="t" />
-					</row>
-				</tab>
-			</middle>
-			<bottom>
-			</bottom>
-		</layout>
+		<layout />
 		<redirect path="/memo/list" />
 	</query>
 	<query id="detail" funcType="detail" label="메모(${/document/rows/row/title})">
@@ -543,12 +527,14 @@ isHistoryEncrypted = true;
 					<link name="list" label="목록" path="/memo/list" icon="list" class="material-icons md-18 list">
 						<params>
 							<param name="page" type="param" value="page" />
+							<param name="search" type="param" value="search" />
 						</params>
 					</link>
 					<link name="detail" label="목록" path="/memo/detail" icon="list" class="material-icons md-18 list">
 						<params>
 							<param name="memo_id" type="query" value="parent_id" />
 							<param name="page" type="param" value="page" />
+							<param name="search" type="param" value="search" />
 						</params>
 					</link>
 				</left>
@@ -559,6 +545,7 @@ isHistoryEncrypted = true;
 							<param name="memo_id" type="query" value="memo_id" />
 							<param name="parent_id" type="query" value="parent_id" />
 							<param name="page" type="param" value="page" />
+							<param name="search" type="param" value="search" />
 						</params>
 					</link>
 				</right>
@@ -597,6 +584,8 @@ isHistoryEncrypted = true;
 							<link path="/memo/detail">
 								<param name="memo_id" type="query" value="memo_id" />
 								<param name="parent_id" type="query" value="parent_id" />
+								<param name="search" type="param" value="search" />
+								<param name="page" type="param" value="page" />
 							</link>
 						</column>
 						<column label="암호화된 제목" name="encrypted_title" />
@@ -610,6 +599,8 @@ isHistoryEncrypted = true;
 						<params>
 							<param name="memo_id" type="query" value="memo_id" />
 							<param name="parent_id" type="query" value="parent_id" />
+							<param name="page" type="param" value="page" />
+							<param name="search" type="param" value="search" />
 						</params>
 					</link>
 				</left>
@@ -618,6 +609,7 @@ isHistoryEncrypted = true;
 						<params>
 							<param name="parent_id" type="query" value="memo_id" />
 							<param name="page" type="param" value="page" />
+							<param name="search" type="param" value="search" />
 						</params>
 					</link>
 				</right>
@@ -721,9 +713,13 @@ isHistoryEncrypted = true;
 		<!--files>
 			<file name="memo.file" path="${prop.memo.save.directory}/attach/${param.memo_id}" backup="${prop.memo.backup.directory}/attach/${param.memo_id}" />
 		</files-->
-		<redirect path="/memo/list" cond="${param.parent_id} isEmpty" />
+		<redirect path="/memo/list" cond="${param.parent_id} isEmpty">
+			<param name="search" type="param" value="search" />
+		</redirect>
 		<redirect path="/memo/detail" cond="${param.parent_id} isNotEmpty">
 			 <param name="memo_id" type="param" value="parent_id" />
+			 <param name="page" type="param" value="page" />
+			 <param name="search" type="param" value="search" />
 		</redirect>
 	</query>
 	<query id="deleteAutoSave" funcType="delete" label="자동저장 삭제">
