@@ -24,14 +24,14 @@
 
 - License : BSD 3-Clause "New" or "Revised" License(https://github.com/highlightjs/highlight.js/blob/master/LICENSE)
 - GitHUB : https://github.com/highlightjs/highlight.js
-- CDN : https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js
+- CDN : https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js
 - Language : Javascript
 
 ### 1.4. Line numbering plugin for Highlight.js (https://wcoder.github.io/highlightjs-line-numbers.js/)
 
 - License : MIT License (https://github.com/wcoder/highlightjs-line-numbers.js/blob/master/LICENSE)
 - GitHUB : https://github.com/wcoder/highlightjs-line-numbers.js/
-- CDN : https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js
+- CDN : https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js
 - Language : Javascript
 
 ### 1.5. Stanford Javascript Crypto Library(http://bitwiseshiftleft.github.io/sjcl/)
