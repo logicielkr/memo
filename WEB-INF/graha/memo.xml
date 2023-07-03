@@ -11,14 +11,14 @@ button i {
 	</header>
 	<query id="list" funcType="list" label="메모">
 		<header>
-			<style src="https://fonts.googleapis.com/icon?family=Material+Icons" />
+			<style src="//fonts.googleapis.com/icon?family=Material+Icons" />
 			<style src="../../css/memo.list.css" />
 			<style src="../../css/memo.pwd_area.css" />
 			<style src="../../css/memo.message_area.css" />
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.8/sjcl.js" />
-			<script src="https://cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" />
-			<script src="https://cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" />
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="//cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.8/sjcl.js" />
+			<script src="//cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" />
+			<script src="//cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" />
 			<script><![CDATA[
 var isEncrypted = false;
 <xsl:if test="/document/rows[@id='memo']/row/encrypted = 't'">
@@ -117,7 +117,7 @@ isEncrypted = true;
 			<style src="../../css/memo.insert.css" />
 			<style src="../../css/memo.pwd_area.css" />
 			<style src="../../css/memo.message_area.css" />
-			<style src="https://fonts.googleapis.com/icon?family=Material+Icons" />
+			<style src="//fonts.googleapis.com/icon?family=Material+Icons" />
 			<style><![CDATA[
 <xsl:if test="/document/rows[@id='memo']/row/encrypted = 't'">
 div#pwd_area {
@@ -153,10 +153,10 @@ var memoHistoryId = null;
 memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history_id" />;
 </xsl:if>
 			]]></script>
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.8/sjcl.js" />
-			<script src="https://cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" />
-			<script src="https://cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" />
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="//cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.8/sjcl.js" />
+			<script src="//cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" />
+			<script src="//cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" />
 			<script src="../../js/memo.insert.js" name="check_submit" override="true" />
 			<script src="../../js/memo.pwd_area.js" override="true" />
 			<script src="../../js/memo.message_area.js" override="true" />
@@ -377,8 +377,8 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 	</query>
 	<query id="detail" funcType="detail" label="메모(${/document/rows/row/title})">
 		<header>
-			<style src="https://fonts.googleapis.com/icon?family=Material+Icons" />
-			<style src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/default.min.css" />
+			<style src="//fonts.googleapis.com/icon?family=Material+Icons" />
+			<style src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css" />
 			<style src="../../css/memo.detail.css" />
 			<style src="../../css/memo.pwd_area.css" />
 			<style src="../../css/memo.message_area.css" />
@@ -427,14 +427,14 @@ var isHistoryEncrypted = false;
 isHistoryEncrypted = true;
 </xsl:if>
 			]]></script>
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
-			<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" />
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" />
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js" />
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.8/sjcl.js" />
-			<script src="https://cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" />
-			<script src="https://cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" />
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/4.0.2/diff.min.js" />
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="//cdn.jsdelivr.net/npm/marked/marked.min.js" />
+			<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js" />
+			<script src="//cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js" />
+			<script src="//cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.8/sjcl.js" />
+			<script src="//cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" />
+			<script src="//cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" />
+			<script src="//cdnjs.cloudflare.com/ajax/libs/jsdiff/4.0.2/diff.min.js" />
 			<script src="../../js/memo.detail.js"  name="check_submit" override="true" />
 			<script src="../../js/memo.message_area.js" override="true" />
 			<script src="../../js/memo.pwd_area.js" override="true" />
