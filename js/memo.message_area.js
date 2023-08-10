@@ -115,8 +115,8 @@ MessageArea.message = function(msg, btns) {
 
 	$("div#message_area input.confirm").hide();
 	$("div#message_area input.cancle").hide();
+	$("div#message_area div.btn div.btns").empty();
 	if(btns) {
-		$("div#message_area div.btn div.btns").empty();
 		for(var i = 0; i < btns.length; i++) {
 			var result = $("div#message_area div.btn div.btns").append("<input type=\"button\" value=\"" + btns[i].label + "\" class=\"" + btns[i].className + "\" />");
 			if(btns[i].callback) {
