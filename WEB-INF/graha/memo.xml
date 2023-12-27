@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <querys>
 	<header extends="_base.xml">
-		<!--prop name="memo.save.directory" value="${system.context.root.path}WEB-INF/memo" />
-		<prop name="memo.backup.directory" value="${system.context.root.path}WEB-INF/memo" /-->
+		<prop name="memo.save.directory" value="${system.context.root.path}WEB-INF/file/memo" />
+		<prop name="memo.backup.directory" value="${system.context.root.path}WEB-INF/backup/memo" />
 		<style>
 button i {
 	vertical-align: middle;
@@ -263,8 +263,8 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 				</where>
 			</table>
 		</tables>
-		<!--files>
-			<file name="memo.file" path="${prop.memo.save.directory}/attach/${query.memo.memo_id}" append="3" backup="${prop.memo.backup.directory}/backup/${query.memo.memo_id}" />
+		<files>
+			<file name="memo.file" path="${prop.memo.save.directory}/${query.memo.memo_id}" append="3" backup="${prop.memo.backup.directory}/${query.memo.memo_id}" />
 			<auth check="${result} > 0">
 				<sql>select count(*) from memo.memo where insert_id = ? and memo_id = ?</sql>
 				<params>
@@ -272,7 +272,7 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 					<param name="memo_id" datatype="int" value="param.query.memo.memo_id" />
 				</params>
 			</auth>
-		</files-->
+		</files>
 		<layout msg="변경사항을 저장하시겠습니까?">
 			<top>
 				<left>
@@ -507,8 +507,8 @@ isHistoryEncrypted = true;
 				</params>
 			</command>
 		</commands>
-		<!--files>
-			<file name="memo.file" path="${prop.memo.save.directory}/attach/${query.memo.memo_id}" backup="${prop.memo.backup.directory}/attach/${query.memo.memo_id}" />
+		<files>
+			<file name="memo.file" path="${prop.memo.save.directory}/${query.memo.memo_id}" backup="${prop.memo.backup.directory}/${query.memo.memo_id}" />
 			<auth check="${result} > 0">
 				<sql>select count(*) from memo.memo where insert_id = ? and memo_id = ?</sql>
 				<params>
@@ -516,7 +516,7 @@ isHistoryEncrypted = true;
 					<param name="memo_id" datatype="int" value="param.query.memo.memo_id" />
 				</params>
 			</auth>
-		</files-->
+		</files>
 		<layout>
 			<top>
 				<left>
@@ -706,9 +706,9 @@ isHistoryEncrypted = true;
 				</where>
 			</table>
 		</tables>
-		<!--files>
-			<file name="memo.file" path="${prop.memo.save.directory}/attach/${param.memo_id}" backup="${prop.memo.backup.directory}/attach/${param.memo_id}" />
-		</files-->
+		<files>
+			<file name="memo.file" path="${prop.memo.save.directory}/${param.memo_id}" backup="${prop.memo.backup.directory}/${param.memo_id}" />
+		</files>
 		<redirect path="/memo/list" cond="${param.parent_id} isEmpty">
 			<param name="search" type="param" value="search" />
 		</redirect>
