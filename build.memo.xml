@@ -1,4 +1,4 @@
-<project name="memo" default="package-tar">
+<project name="build.memo">
 	<property name = "base.dir" value = "."/>
 	<property name = "app.name" value = "graha-memo"/>
 	<property name = "app.version" value = "0.9.0.0"/>
