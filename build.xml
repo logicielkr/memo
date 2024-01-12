@@ -1,0 +1,3 @@
+<project name="memo" default="package-tar">
+	<import file="./build.memo.xml" as="memo" />
+</project>
