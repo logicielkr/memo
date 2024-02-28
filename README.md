@@ -21,7 +21,7 @@ Graha를 활용한 메모장 프로그램이다.
 	- Apache Tomcat 7.x 이상
 	- PostgreSQL 9.1.4 이상
 	- JDBC 4.0 이상
-	- Graha 0.5.0.6 이상
+	- Graha 0.5.1.187 이상
 
 ## 4. 배포하는 곳
 
