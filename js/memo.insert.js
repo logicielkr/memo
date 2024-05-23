@@ -141,7 +141,11 @@ function loadMemoHistory() {
 }
 function initDecrypt() {
 	var encrypted = $("form#insert input.title").val();
-	$("form#insert input.title").val(PwdArea.decrypt(encrypted));
+	var decrypted = PwdArea.decrypt(encrypted);
+	$("form#insert input.title").val(decrypted);
+	$(document).attr("title", "메모(" + decrypted + ")");
+	$("h2.title").text("메모(" + decrypted + ")");
+	
 	encrypted = $("form#insert textarea.contents").val();
 	$("form#insert textarea.contents").val(PwdArea.decrypt(encrypted));
 }
