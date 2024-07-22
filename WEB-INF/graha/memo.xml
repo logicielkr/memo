@@ -528,7 +528,7 @@ isHistoryEncrypted = true;
 					</link>
 					<link name="detail" label="목록" path="/memo/detail" icon="list" class="material-icons md-18 list">
 						<params>
-							<param name="memo_id" type="query" value="parent_id" />
+							<param name="memo_id" type="query" value="memo.parent_id" />
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
 						</params>
@@ -538,8 +538,8 @@ isHistoryEncrypted = true;
 				<right>
 					<link name="update" label="수정" path="/memo/insert"  icon="create" class="material-icons md-18 create">
 						<params>
-							<param name="memo_id" type="query" value="memo_id" />
-							<param name="parent_id" type="query" value="parent_id" />
+							<param name="memo_id" type="query" value="memo.memo_id" />
+							<param name="parent_id" type="query" value="memo.parent_id" />
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
 						</params>
@@ -593,8 +593,8 @@ isHistoryEncrypted = true;
 				<left>
 					<link label="삭제" path="/memo/delete" method="post" type="submit" msg="정말로 삭제하시겠습니까?" icon="delete_sweep" class="material-icons md-18 delete_sweep">
 						<params>
-							<param name="memo_id" type="query" value="memo_id" />
-							<param name="parent_id" type="query" value="parent_id" />
+							<param name="memo_id" type="query" value="memo.memo_id" />
+							<param name="parent_id" type="query" value="memo.parent_id" />
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
 						</params>
@@ -603,7 +603,7 @@ isHistoryEncrypted = true;
 				<right>
 					<link name="insert" label="추가" path="/memo/insert" icon="add" class="material-icons md-18 add">
 						<params>
-							<param name="parent_id" type="query" value="memo_id" />
+							<param name="parent_id" type="query" value="memo.memo_id" />
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
 						</params>
