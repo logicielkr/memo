@@ -11,7 +11,6 @@ table#memo td.contents2 {
 	height: 150px;
 	display:none;
 }
-
 table#memo_history {
 	margin-top:10px;
 }
@@ -79,6 +78,11 @@ table#memo_child th.update_date {
 	width:200px;
 	text-align:center;
 }
+@media only screen and (max-width: 800px) {
+	form.project select.project_id {
+		max-width:200px;
+	}
+}
 @media only screen and (max-width: 600px) {
 	table#memo_child td.update_date, 
 	table#memo_child th.update_date {
@@ -103,6 +107,9 @@ table#memo_child th.update_date {
 	}
 	table#memo td.insert_date:after {
 		content: " I";
+	}
+	form.project select.project_id {
+		max-width:130px;
 	}
 }
 
@@ -204,3 +211,9 @@ td.contents2 ul li
 	margin:0px;
 }
 */
+img {
+	max-width:100%;
+}
+table#memo td.graha.contents2 blockquote {
+	background-color:#F3F3F3;
+}

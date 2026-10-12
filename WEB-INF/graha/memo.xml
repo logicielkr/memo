@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <querys>
 	<header extends="_base.xml">
+		<prop name="project_supported" value="false" />
+		<prop name="category_supported" value="false" />
+		<prop name="authentication_type" value="login_name" />
+		<!--
+		<prop name="authentication_type" value="none" />
+		<prop name="authentication_type" value="role_name" />
+		-->
 		<prop name="memo.save.directory" value="${system.context.root.path}WEB-INF/file/memo" />
 		<prop name="memo.backup.directory" value="${system.context.root.path}WEB-INF/backup/memo" />
 		<style>
@@ -8,28 +15,107 @@ button i {
 	vertical-align: middle;
 }
 		</style>
+		<prop name="table_name" value="memo.memo" />
+		<prop name="history_table_name" value="memo.memo_history" />
+		<prop name="sequence_name" value="memo.memo$memo_id" />
+		<prop name="history_sequence_name" value="memo.memo_history$memo_history_id" />
+		<prop name="project_table_name" value="project.project" />
+		
+		<prop name="user_role_table_name" value="common.graha_user_role" />
+		<prop name="login_name_column_name" value="login_name" />
+		<prop name="role_name_column_name" value="role_name" />
+		
+		<prop name="project_id" value="${param.project_id}" cond="${prop.project_supported} equals 'true'" public="true" />
+
+		<prop name="category" value="${param.category}" cond="${prop.category_supported} equals 'true'" public="true" />
+		<codes>
+			<code name="category" label="상태" cond="${prop.category_supported} equals 'true'" override="true">
+				<option value="O" label="Open" />
+				<option value="C" label="Close" />
+				<option value="R" label="Release" />
+				<option value="F" label="Finish" />
+				<option value="H" label="Hold" />
+				<option value="D" label="Discard" />
+			</code>
+		</codes>
 	</header>
-	<query id="list" funcType="list" label="메모">
+	<query id="list" funcType="list" label="${prop.app.label}">
 		<header>
 			<style src="//cdn.jsdelivr.net/npm/material-icons@1.13.12/iconfont/material-icons.min.css" name="Material+Icons" override="true" preload="true" />
 			<style src="../../css/memo.list.css" />
-			<style src="../../css/memo.pwd_area.css" />
-			<style src="../../css/memo.message_area.css" />
 			<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" name="jquery" override="true" preload="true" />
-			<script src="//cdn.jsdelivr.net/npm/sjcl@1.0.8/sjcl.min.js" name="sjcl" override="true" />
-			<script src="//cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" name="sjcl-codecBytes" override="true" />
-			<script src="//cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" name="sjcl-base64js" override="true" />
 			<script><![CDATA[
 var isEncrypted = false;
 <xsl:if test="/document/rows[@id='memo']/row/encrypted = 't'">
 isEncrypted = true;
 </xsl:if>
 			]]></script>
-			<script src="../../js/memo.pwd_area.js" override="true" />
-			<script src="../../js/memo.message_area.js" override="true" />
 			<script src="../../js/memo.list.js" />
 			<xi:include href="memo/pwd_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 			<xi:include href="memo/message_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+			<codes>
+				<code name="category_abbr" label="상태" cond="${prop.category_supported} equals 'true'" override="true">
+					<option value="O" label="[ ]" />
+					<option value="C" label="[√]" />
+					<option value="R" label="[R]" />
+					<option value="F" label="[F]" />
+					<option value="H" label="[H]" />
+					<option value="D" label="[x]" />
+				</code>
+			</codes>
+			
+			<prop name="category.code" value="abbr" cond="${code.category_abbr.firstValue} exists" time="after" public="true" />
+			<prop name="category.code" value="normal" cond="${code.category_abbr.firstValue} empty" time="after" public="true" />
+			<prop name="category.code" value="unsupported" cond="${prop.category_supported} != 'true'" time="after" public="true" />
+
+			<top position="above" cond="${prop.category_supported} equals 'true'"><![CDATA[
+<ul class="category">
+	<xsl:variable name="hrefparam"><xsl:if test="/document/params[@for = 'data']/project_id and /document/params[@for = 'data']/project_id != ''">project_id=<xsl:value-of select="/document/params[@for = 'data']/project_id" /></xsl:if><xsl:if test="/document/params[@for = 'data']/search and /document/params[@for = 'data']/search != ''"><xsl:if test="/document/params[@for = 'data']/project_id and /document/params[@for = 'data']/project_id != ''">&amp;</xsl:if>search=<xsl:value-of select="/document/params[@for = 'data']/search" /></xsl:if></xsl:variable>
+	<li>
+		<xsl:if test="not(/document/props/category)"><xsl:attribute name="class">selected</xsl:attribute></xsl:if>
+		<a>
+			<xsl:attribute name="href">list.html<xsl:if test="$hrefparam and $hrefparam != ''">?<xsl:value-of select="$hrefparam" /></xsl:if></xsl:attribute>
+			All
+		</a>
+	</li>
+	<xsl:for-each select="/document/code[@name='category']/option">
+		<li>
+			<xsl:if test="/document/props/category = @value"><xsl:attribute name="class">selected</xsl:attribute></xsl:if>
+			<a>
+				<xsl:attribute name="href">list.html?category=<xsl:value-of select="@value" /><xsl:if test="$hrefparam and $hrefparam != ''">&amp;<xsl:value-of select="$hrefparam" /></xsl:if></xsl:attribute>
+				<xsl:value-of select="@label" />
+			</a>
+		</li>
+	</xsl:for-each>
+</ul>
+			]]></top>
+			<style cond="${prop.category_supported} equals 'true'">
+ul.category {
+	display:block;
+	clear:both;
+	z-index:1;
+}
+ul.category li {
+	list-style-type: none;
+	float:left;
+	padding:10px 20px 10px 20px;
+	margin-bottom:5px;
+	margin-right:3px;
+	background-color: #ccc;
+	z-index:1;
+}
+ul.category li.selected {
+	background-color: orange;
+	z-index:1;
+}
+<![CDATA[<xsl:if test="/document/props/category.code = 'abbr'">
+table#memo th.category, 
+table#memo td.category {
+	width:50px;
+	text-align:center;
+}
+</xsl:if>]]>
+			</style>
 		</header>
 		<commands>
 			<command name="memo">
@@ -38,66 +124,157 @@ isEncrypted = true;
 						memo_id
 						, case when encrypted = true then '암호화된 게시물' else title end as title
 						, case when encrypted = true then title else '' end as encrypted_title
-						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
+						, to_char(memo.update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
 						, encrypted
-					from memo.memo as memo
-					where insert_id = ?
-					and parent_id is null
+<tile cond="${prop.category_supported} equals 'true'">
+						, category
+</tile>
+<tile cond="${prop.project_supported} equals 'true'">
+						, project.name as project_name
+					from <entity>${prop.table_name}</entity> as memo
+					left outer join <entity>${prop.project_table_name}</entity> as project on memo.project_id = project.project_id
+</tile>
+<tile cond="${prop.project_supported} != 'true'">
+					from <entity>${prop.table_name}</entity> as memo
+</tile>
+					where memo.parent_id is null
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile>
+<tile cond="${prop.category} isNotEmpty">
+					and memo.category = ?
+</tile>
+<tile cond="${prop.project_id} isNotEmpty">
+					and memo.project_id = ?
+</tile>
 <tile cond="${param.search} isNotEmpty">
 					and (
 						title like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%' or contents like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%'
 						or exists (
-							select * from memo.memo as memo_child where memo_child.parent_id = memo.memo_id
+							select *
+							from <entity>${prop.table_name}</entity> as memo_child
+							where memo_child.parent_id = memo.memo_id
 							and (title like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%' or contents like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%')
+<tile cond="${prop.authentication_type} equals 'login_name'">
 							and insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+							and exists (
+								select *
+								from <entity>${prop.user_role_table_name}</entity> _a
+								inner join <entity>${prop.user_role_table_name}</entity> _b 
+								on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+								where _a.<entity>${prop.login_name_column_name}</entity> = memo_child.insert_id
+							)
+</tile>
 						)
 					)
 </tile>
-					order by memo_id desc
+					order by memo.insert_date desc
 				</sql>
 				<sql_cnt>
-					select count(*) from memo.memo as memo where insert_id = ? and parent_id is null
+					select count(*)
+					from <entity>${prop.table_name}</entity> as memo
+					where parent_id is null
+<tile cond="${prop.authentication_type} equals 'login_name'">
+					and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile>
+<tile cond="${prop.category} isNotEmpty">
+					and memo.category = ?
+</tile>
+<tile cond="${prop.project_id} isNotEmpty">
+					and project_id = ?
+</tile>
 <tile cond="${param.search} isNotEmpty">
 					and (
 						title like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%' or contents like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%'
 						or exists (
-							select * from memo.memo as memo_child where memo_child.parent_id = memo.memo_id
+							select *
+							from <entity>${prop.table_name}</entity> as memo_child
+							where memo_child.parent_id = memo.memo_id
 							and (title like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%' or contents like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%')
+<tile cond="${prop.authentication_type} equals 'login_name'">
 							and insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+							and exists (
+								select *
+								from <entity>${prop.user_role_table_name}</entity> _a
+								inner join <entity>${prop.user_role_table_name}</entity> _b 
+								on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+								where _a.<entity>${prop.login_name_column_name}</entity> = memo_child.insert_id
+							)
+</tile>
 						)
 					)
 </tile>
 				</sql_cnt>
 				<params>
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
-					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
-					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
-					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
-					<param name="search" datatype="varchar" value="param.search" default="%" cond="${param.search} isNotEmpty" />
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${param.search} isNotEmpty" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
+					<param name="category" datatype="varchar" value="prop.category" cond="${prop.category} isNotEmpty" />
+					<param name="project_id" datatype="int" value="prop.project_id" cond="${prop.project_id} isNotEmpty" />
+					<tile cond="${param.search} isNotEmpty">
+						<param name="search" datatype="varchar" value="param.search" default="%" />
+						<param name="search" datatype="varchar" value="param.search" default="%" />
+						<param name="search" datatype="varchar" value="param.search" default="%" />
+						<param name="search" datatype="varchar" value="param.search" default="%" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
+					</tile>
 				</params>
 			</command>
 		</commands>
 		<layout>
 			<top>
 				<center>
-					<search label="검색" path="/memo/list">
+					<search label="검색" path="list">
 						<params>
 							<param name="search" value="search" />
+							<param name="category" value="category" type="prop" hidden="true" />
+							<param name="project_id" value="project_id" type="prop" hidden="true" />
 						</params>
 					</search>
 				</center>
 				<right>
-					<link name="insert" label="추가" path="/memo/insert" icon="add" class="material-icons md-18 add" />
+					<link name="insert" label="추가" path="insert" icon="add" class="material-icons md-18 add">
+						<params>
+							<param name="category" value="category" type="prop" hidden="true" />
+							<param name="project_id" value="project_id" type="prop" hidden="true" />
+						</params>
+					</link>
 				</right>
 			</top>
 			<middle>
 				<tab name="memo">
+					<column label="프로젝트" name="project_name" cond="${prop.project_supported} equals 'true'" />
+					<column label="분류" name="category" cond="${prop.category.code} equals 'normal'" code="true" for="category" />
+					<column name="category" cond="${prop.category.code} equals 'abbr'" code="true" for="category_abbr" />
 					<column label="제목" name="title">
-						<link path="/memo/detail">
+						<link path="detail">
 							<param name="memo_id" type="query" value="memo_id" />
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
+							<param name="category" value="category" type="prop" />
+							<param name="project_id" value="project_id" type="prop" />
 						</link>
 					</column>
 					<column label="마지막수정일시" name="update_date" />
@@ -109,14 +286,52 @@ isEncrypted = true;
 			</bottom>
 		</layout>
 	</query>
-	<query id="insert" funcType="insert" label="메모 추가">
+	<query id="insert" funcType="insert" label="${prop.app.label} 추가">
 		<header>
 			<labels>
-				<label text="메모 수정(${/document/rows/row/title})" cond="${param.memo_id} exists" />
+				<label text="${prop.app.label} 수정(${/document/rows/row/title})" cond="${param.memo_id} exists" />
 			</labels>
+			<prop name="oproject_id" value="${param.oproject_id}" cond="${prop.project_supported} equals 'true'" />
+			<prop name="project.supported" value="g" cond="${header.method} equals 'GET'" />
+			<prop name="project.supported" value="${prop.project.supported}s" cond="${prop.project_supported} equals 'true'" />
+			<prop name="project.supported" value="${prop.project.supported}p" cond="${param.parent_id} isEmpty" />
+			<codes>
+				<code name="project" cond="${prop.project.supported} equals 'gsp'">
+					<sql>
+						select project_id as value, name as label from <entity>${prop.project_table_name}</entity> order by order_number asc nulls first
+					</sql>
+				</code>
+			</codes>
+			<prop name="project.using" value="query" cond="${param.memo_id} isNotEmpty" />
+			<prop name="project.using" value="param" cond="${param.memo_id} isEmpty" />
+			<prop name="project.using" value="${prop.project.using}Y" cond="${prop.project.supported} equals 'gsp'" />
+			<prop name="project.project_id" value="${query.memo.project_id}" time="after" cond="${prop.project.using} equals 'queryY'" public="true" />
+			<prop name="project.project_id" value="${param.project_id}" cond="${prop.project.using} equals 'paramY'" public="true" />
+			
+			<prop name="project.parent" value="query" cond="${param.memo_id} isNotEmpty" />
+			<prop name="project.parent" value="param" cond="${param.memo_id} isEmpty" />
+			<prop name="project.parent" value="${prop.project.parent}Y" cond="${prop.project.supported} equals 'gs'" />
+			<prop name="project.parent_project_id" value="${query.memo.project_id}" time="after" cond="${prop.project.parent} equals 'queryY'" public="true" />
+			<prop name="project.parent_project_id" value="${param.parent_project_id}" cond="${prop.project.parent} equals 'paramY'" public="true" />
+			
+			<prop name="ocategory" value="${param.ocategory}" cond="${prop.category_supported} equals 'true'" />
+			<prop name="category.supported" value="g" cond="${header.method} equals 'GET'" />
+			<prop name="category.supported" value="${prop.category.supported}s" cond="${prop.category_supported} equals 'true'" />
+			<prop name="category.supported" value="${prop.category.supported}p" cond="${param.parent_id} isEmpty" />
+			
+			<prop name="category.using" value="query" cond="${param.memo_id} isNotEmpty" />
+			<prop name="category.using" value="param" cond="${param.memo_id} isEmpty" />
+			<prop name="category.using" value="${prop.category.using}Y" cond="${prop.category.supported} equals 'gsp'" />
+			<prop name="category.category" value="${query.memo.category}" time="after" cond="${prop.category.using} equals 'queryY'" public="true" />
+			<prop name="category.category" value="${param.category}" cond="${prop.category.using} equals 'paramY'" public="true" />
+			
+			<prop name="category.parent" value="query" cond="${param.memo_id} isNotEmpty" />
+			<prop name="category.parent" value="param" cond="${param.memo_id} isEmpty" />
+			<prop name="category.parent" value="${prop.category.parent}Y" cond="${prop.category.supported} equals 'gs'" />
+			<prop name="category.parent_category" value="${query.memo.category}" time="after" cond="${prop.category.parent} equals 'queryY'" public="true" />
+			<prop name="category.parent_category" value="${param.parent_category}" cond="${prop.category.parent} equals 'paramY'" public="true" />
+			
 			<style src="../../css/memo.insert.css" />
-			<style src="../../css/memo.pwd_area.css" />
-			<style src="../../css/memo.message_area.css" />
 			<style src="//cdn.jsdelivr.net/npm/material-icons@1.13.12/iconfont/material-icons.min.css" name="Material+Icons" override="true" preload="true" />
 			<style><![CDATA[
 <xsl:if test="/document/rows[@id='memo']/row/encrypted = 't'">
@@ -154,30 +369,40 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 </xsl:if>
 			]]></script>
 			<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" name="jquery" override="true" preload="true" />
-			<script src="//cdn.jsdelivr.net/npm/sjcl@1.0.8/sjcl.min.js" name="sjcl" override="true" />
-			<script src="//cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" name="sjcl-codecBytes" override="true" />
-			<script src="//cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" name="sjcl-base64js" override="true" />
 			<script src="../../js/memo.insert.js" name="check_submit" override="true" />
-			<script src="../../js/memo.pwd_area.js" override="true" />
-			<script src="../../js/memo.message_area.js" override="true" />
-			<xi:include href="memo/pwd_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 			<xi:include href="memo/message_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+			<xi:include href="memo/pwd_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 			<prop name="savehistory" value="y" cond="${param.history} isEmpty" />
 			<prop name="savehistory" value="${prop.savehistory}y" cond="${param.memo_id} isNotEmpty" />
 		</header>
 		<processors>
 			<processor type="query" after="true" method="POST" cond="${param.memo_history_id} isNotEmpty">
 				<sql>
-					delete from memo.memo_history where memo_history_id = ? and insert_id = ?
+					delete
+					from <entity>${prop.history_table_name}</entity> as memo_history
+					where memo_history_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+					and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+					and exists (
+						select *
+						from <entity>${prop.user_role_table_name}</entity> _a
+						inner join <entity>${prop.user_role_table_name}</entity> _b 
+						on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+						where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+					)
+</tile>
 				</sql>
 				<params>
 					<param name="memo_history_id" datatype="int" value="param.memo_history_id" default="-1" />
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 				</params>
 			</processor>
 			<processor type="query" before="true" method="POST" cond="${prop.savehistory} equals 'yy'">
 				<sql>
-					insert into memo.memo_history (
+					insert into <entity>${prop.history_table_name}</entity> (
 						memo_history_id,
 						title,
 						contents,
@@ -186,6 +411,12 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 						memo_id,
 						autosave,
 						parent_id,
+<tile cond="${prop.category} isNotEmpty">
+						category,
+</tile>
+<tile cond="${prop.project_id} isNotEmpty">
+						project_id,
+</tile>
 						insert_date,
 						insert_id,
 						insert_ip,
@@ -201,38 +432,87 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 						memo_id,
 						false as autosave,
 						parent_id,
+<tile cond="${prop.category} isNotEmpty">
+						category,
+</tile>
+<tile cond="${prop.project_id} isNotEmpty">
+						project_id,
+</tile>
 						insert_date,
 						insert_id,
 						insert_ip,
 						update_date,
 						update_id,
 						update_ip
-					from memo.memo where memo_id = ?
+					from <entity>${prop.table_name}</entity> as memo
+					where memo_id = ?
 					and (md5(trim(title)) != md5(trim(?)) or md5(trim(contents)) != md5(trim(?)))
-					and insert_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+					and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+					and exists (
+						select *
+						from <entity>${prop.user_role_table_name}</entity> _a
+						inner join <entity>${prop.user_role_table_name}</entity> _b 
+						on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+						where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+					)
+</tile>
 				</sql>
 				<params>
-					<param name="memo_history_id" datatype="int" value="sequence.nextval('memo.memo_history$memo_history_id')" default="-1" />
+					<param name="memo_history_id" datatype="int" value="sequence.nextval('${prop.history_sequence_name}')" default="-1" />
 					<param name="memo_id" datatype="int" value="param.memo_id" default="-1" />
 					<param name="title" datatype="varchar" value="param.title" />
 					<param name="contents" datatype="varchar" value="param.contents" />
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 				</params>
 			</processor>
 			<processor type="query" before="true" method="GET" cond="${param.memo_id} isNotEmpty">
 				<sql>
-					delete from memo.memo_history where memo_id = ? and insert_id = ?
+					delete
+					from <entity>${prop.history_table_name}</entity> as memo_history
+					where memo_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+						)
+</tile>
 					and exists (
-						select * from memo.memo where memo.memo_id = ? and memo.insert_id = ?
+						select *
+						from <entity>${prop.table_name}</entity> as memo
+						where memo.memo_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile>
 						and md5(memo.title) = md5(memo_history.title)
 						and md5(memo.contents) = md5(memo_history.contents)
 					)
 				</sql>
 				<params>
 					<param name="memo_id" datatype="int" value="param.memo_id" default="-1" />
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 					<param name="memo_id" datatype="int" value="param.memo_id" default="-1" />
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 				</params>
 			</processor>
 		</processors>
@@ -240,13 +520,15 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 			<param name="title" not-null="true" msg="제목은 필수 항목입니다!" />
 		</validation>
 		<tables>
-			<table tableName="memo.memo" name="memo" label="메모">
-				<column name="memo_id" value="param.memo_id" datatype="int" primary="true" insert="sequence.nextval('memo.memo$memo_id')" />
+			<table tableName="${prop.table_name}" name="memo" label="${prop.app.label}">
+				<column name="memo_id" value="param.memo_id" datatype="int" primary="true" insert="sequence.nextval('${prop.sequence_name}')" />
 				<column name="title" value="param.title" datatype="varchar" />
 				<column name="contents" value="param.contents" datatype="varchar" />
 				<column name="marked" value="param.marked" datatype="boolean" />
 				<column name="encrypted" value="param.encrypted" datatype="boolean" />
 				<column name="parent_id" value="param.parent_id" datatype="int" />
+				<column name="category" value="param.category" datatype="varchar" cond="${prop.category_supported} equals 'true'" />
+				<column name="project_id" value="param.project_id" datatype="int" cond="${prop.project_supported} equals 'true'" />
 				<column name="insert_date" only="insert" value="sql.now()" datatype="timestamp" />
 				<column name="insert_id" only="insert" value="prop.logined_user" datatype="varchar" />
 				<column name="insert_ip" only="insert" value="header.remote_addr" datatype="varchar" />
@@ -255,10 +537,23 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 				<column name="update_ip" value="header.remote_addr" datatype="varchar" />
 				<where>
 					<sql>
-						insert_id = ?
+						1 = 1
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile>
 					</sql>
 					<params>
-						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 					</params>
 				</where>
 			</table>
@@ -266,45 +561,76 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 		<files>
 			<file name="memo.file" path="${prop.memo.save.directory}/${query.memo.memo_id}" append="3" backup="${prop.memo.backup.directory}/${query.memo.memo_id}" />
 			<auth check="${result} > 0">
-				<sql>select count(*) from memo.memo where insert_id = ? and memo_id = ?</sql>
+				<sql>
+					select count(*)
+					from <entity>${prop.table_name}</entity> as memo
+					where memo_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile> 
+				</sql>
 				<params>
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
 					<param name="memo_id" datatype="int" value="param.query.memo.memo_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 				</params>
 			</auth>
 		</files>
 		<layout msg="변경사항을 저장하시겠습니까?">
 			<top>
 				<left>
-					<link name="list" label="목록" path="/memo/list" icon="list" class="material-icons md-18 list">
+					<link name="list" label="목록" path="list" icon="list" class="material-icons md-18 list">
 						<params>
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
+							<param name="category" value="category" type="prop" />
+							<param name="project_id" value="project_id" type="prop" />
 						</params>
 					</link>
-					<link name="detail" label="목록" path="/memo/detail" icon="list" class="material-icons md-18 list">
+					<link name="detail" label="목록" path="detail" icon="list" class="material-icons md-18 list">
 						<params>
 							<param name="memo_id" type="param" value="parent_id" />
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
+							<param name="category" value="category" type="prop" />
+							<param name="project_id" value="project_id" type="prop" />
 						</params>
 					</link>
 				</left>
 				<center />
 				<right>
-					<link name="save" label="저장" path="/memo/insert" method="post" type="submit" full="true" icon="save" class="material-icons md-18 save">
+					<link name="save" label="저장" path="insert" method="post" type="submit" full="true" icon="save" class="material-icons md-18 save">
 						<params>
 							<param name="memo_id" type="query" value="memo_id" />
 							<param name="parent_id" value="parent_id" />
 							<param name="memo_history_id" value="memo_history_id" />
 							<param name="page" value="page" />
 							<param name="search" type="param" value="search" />
+							<param name="oproject_id" type="prop" value="project_id" cond="${prop.project_supported} equals 'true'" />
+							<param name="ocategory" type="prop" value="category" cond="${prop.category_supported} equals 'true'" />
+							<param name="project_id" type="prop" value="project.parent_project_id" cond="${prop.project.supported} equals 'gs'" />
+							<param name="category" type="prop" value="category.parent_category" cond="${prop.category.supported} equals 'gs'" />
 						</params>
 					</link>
 				</right>
 			</top>
 			<middle>
-				<tab name="memo" label="메모">
+				<tab name="memo" label="${prop.app.label}">
+					<row cond="${prop.project.supported} equals 'gsp'">
+						<column label="프로젝트" name="project_id" value="prop.project.project_id" colspan="3" type="select" for="project" />
+					</row>
+					<row cond="${prop.category.supported} equals 'gsp'">
+						<column label="분류" name="category" value="prop.category.category" colspan="3" type="select" for="category" />
+					</row>
 					<row>
 						<column label="제목" name="title" value="title" colspan="3" />
 					</row>
@@ -323,32 +649,38 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 			</middle>
 			<bottom>
 				<left>
-					<link label="삭제" path="/memo/deleteAutoSave" method="post" type="submit" msg="자동저장된 게시물을 삭제하시겠습니까?" name="delete" icon="delete" class="material-icons md-18 delete">
+					<link label="삭제" path="deleteAutoSave" method="post" type="submit" msg="자동저장된 게시물을 삭제하시겠습니까?" name="delete" icon="delete" class="material-icons md-18 delete">
 						<params>
 							<param name="memo_history_id" value="memo_history_id" />
+							<param name="category" value="category" type="prop" />
+							<param name="project_id" value="project_id" type="prop" />
 						</params>
 					</link>
 				</left>
 			</bottom>
 		</layout>
-		<redirect path="/memo/detail" cond="${param.parent_id} isEmpty">
+		<redirect path="detail" cond="${param.parent_id} isEmpty">
 			<param name="memo_id" type="query" value="memo_id" />
 			<param name="page" type="param" value="page" />
 			<param name="search" type="param" value="search" />
+			<param name="category" value="ocategory" type="prop" />
+			<param name="project_id" value="oproject_id" type="prop" />
 		</redirect>
-		<redirect path="/memo/detail" cond="${param.parent_id} isNotEmpty">
+		<redirect path="detail" cond="${param.parent_id} isNotEmpty">
 			 <param name="memo_id" type="query" value="memo_id" />
 			 <param name="parent_id" type="query" value="parent_id" />
 			 <param name="page" type="param" value="page" />
 			 <param name="search" type="param" value="search" />
+			 <param name="category" value="ocategory" type="prop" />
+			 <param name="project_id" value="oproject_id" type="prop" />
 		</redirect>
 	</query>
 	<query id="autosave" funcType="insert" label="자동저장" auth="${header.method} equals 'POST'">
 		<header>
 		</header>
 		<tables>
-			<table tableName="memo.memo_history" name="memo_history" label="메모 이력관리">
-				<column name="memo_history_id" value="param.memo_history_id" datatype="int" primary="true" insert="sequence.nextval('memo.memo_history$memo_history_id')" />
+			<table tableName="${prop.history_table_name}" name="memo_history" label="${prop.app.label} 이력관리">
+				<column name="memo_history_id" value="param.memo_history_id" datatype="int" primary="true" insert="sequence.nextval('${prop.history_sequence_name}')" />
 				<column name="title" value="param.title" datatype="varchar" />
 				<column name="contents" value="param.contents" datatype="varchar" />
 				<column name="marked" value="param.marked" datatype="boolean" />
@@ -356,6 +688,8 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 				<column name="memo_id" value="param.memo_id" datatype="int" />
 				<column name="autosave" value="param.autosave" datatype="boolean" />
 				<column name="parent_id" value="param.parent_id" datatype="int" />
+				<column name="category" value="param.category" datatype="varchar" cond="${prop.category_supported} equals 'true'" />
+				<column name="project_id" value="param.project_id" datatype="int" cond="${prop.project_supported} equals 'true'" />
 				<column name="insert_date" only="insert" value="sql.now()" datatype="timestamp" />
 				<column name="insert_id" only="insert" value="prop.logined_user" datatype="varchar" />
 				<column name="insert_ip" only="insert" value="header.remote_addr" datatype="varchar" />
@@ -364,24 +698,53 @@ memoHistoryId = <xsl:value-of select="/document/params[@for='data']/memo_history
 				<column name="update_ip" value="header.remote_addr" datatype="varchar" />
 				<where>
 					<sql>
-						insert_id = ?
+						1 = 1
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+						)
+</tile>
 					</sql>
 					<params>
-						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 					</params>
 				</where>
 			</table>
 		</tables>
 		<layout />
-		<redirect path="/memo/list" />
+		<redirect path="list">
+			<param name="category" value="category" type="prop" />
+			<param name="project_id" value="project_id" type="prop" />
+		</redirect>
 	</query>
-	<query id="detail" funcType="detail" label="메모(${/document/rows/row/title})">
+	<query id="detail" funcType="detail" label="${prop.app.label}(${/document/rows/row/title})">
 		<header>
+			<prop name="project.supported" value="g" cond="${header.method} equals 'GET'" />
+			<prop name="project.supported" value="${prop.project.supported}s" cond="${prop.project_supported} equals 'true'" />
+			<prop name="project.supported" value="${prop.project.supported}p" cond="${param.parent_id} isEmpty" />
+			<codes>
+				<code name="project" cond="${prop.project_supported} equals 'true'">
+					<sql>
+						select project_id as value, name as label from <entity>${prop.project_table_name}</entity> order by order_number asc nulls first
+					</sql>
+				</code>
+			</codes>
+			
+			<prop name="category.supported" value="g" cond="${header.method} equals 'GET'" />
+			<prop name="category.supported" value="${prop.category.supported}s" cond="${prop.category_supported} equals 'true'" />
+			<prop name="category.supported" value="${prop.category.supported}p" cond="${param.parent_id} isEmpty" />
+			
 			<style src="//cdn.jsdelivr.net/npm/material-icons@1.13.12/iconfont/material-icons.min.css" name="Material+Icons" override="true" preload="true" />
 			<style src="//cdn.jsdelivr.net/npm/highlight.js@11.2.0/styles/default.min.css" name="highlight-css" override="true" />
 			<style src="../../css/memo.detail.css" />
-			<style src="../../css/memo.pwd_area.css" />
-			<style src="../../css/memo.message_area.css" />
 			<style><![CDATA[
 <xsl:if test="/document/rows[@id='memo']/row/encrypted = 't'">
 div#pwd_area {
@@ -431,13 +794,8 @@ isHistoryEncrypted = true;
 			<script src="//cdn.jsdelivr.net/npm/marked@5.0.5/marked.min.js" name="marked.js" override="true" />
 			<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.2.0/build/highlight.min.js" name="highlight.js" override="true" />
 			<script src="//cdn.jsdelivr.net/npm/@openbayes/highlightjs-line-numbers@2.8.0/dist/highlightjs-line-numbers.min.js" name="highlightjs-line-numbers" override="true" />
-			<script src="//cdn.jsdelivr.net/npm/sjcl@1.0.8/sjcl.min.js" name="sjcl" override="true" />
-			<script src="//cdn.jsdelivr.net/npm/sjcl@1.0.8/core/codecBytes.js" name="sjcl-codecBytes" override="true" />
-			<script src="//cdn.jsdelivr.net/npm/base64-js@1.3.1/base64js.min.js" name="sjcl-base64js" override="true" />
 			<script src="//cdn.jsdelivr.net/npm/diff@4.0.2/dist/diff.min.js" name="kpdecker-diff" override="true" />
 			<script src="../../js/memo.detail.js"  name="check_submit" override="true" />
-			<script src="../../js/memo.message_area.js" override="true" />
-			<script src="../../js/memo.pwd_area.js" override="true" />
 			<xi:include href="memo/pwd_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 			<xi:include href="memo/message_area.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 			<bottom><![CDATA[
@@ -459,12 +817,31 @@ isHistoryEncrypted = true;
 						, marked
 						, encrypted
 						, parent_id
-					from memo.memo
-						where memo_id = ? and insert_id = ?
+<tile cond="${prop.category_supported} equals 'true'">
+						, category
+</tile>
+<tile cond="${prop.project_supported} equals 'true'">
+						, project_id
+</tile>
+					from <entity>${prop.table_name}</entity> as memo
+					where memo_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+					and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+					and exists (
+						select *
+						from <entity>${prop.user_role_table_name}</entity> _a
+						inner join <entity>${prop.user_role_table_name}</entity> _b 
+						on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+						where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+					)
+</tile>
 				</sql>
 				<params>
 					<param default="null" name="memo_id" datatype="int" value="param.memo_id" />
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 				</params>
 			</command>
 			<command name="memo_history" multi="true">
@@ -477,14 +854,27 @@ isHistoryEncrypted = true;
 						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
 						, marked
 						, encrypted
-					from memo.memo_history
-						where memo_id = ? and insert_id = ?
+					from <entity>${prop.history_table_name}</entity> as memo_history
+						where memo_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+						)
+</tile>
 						and autosave = false
 						order by memo_history_id desc
 				</sql>
 				<params>
 					<param default="null" name="memo_id" datatype="int" value="param.memo_id" />
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 				</params>
 			</command>
 			<command name="memo_child" multi="true">
@@ -496,58 +886,109 @@ isHistoryEncrypted = true;
 						, to_char(update_date, 'YYYY-MM-DD HH24:MI:SS') as update_date
 						, encrypted
 						, parent_id
-					from memo.memo
-						where parent_id = ?
-							and insert_id = ?
+					from <entity>${prop.table_name}</entity> as memo_child
+					where parent_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_child.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_child.insert_id
+						)
+</tile>
 						order by memo_id desc
 				</sql>
 				<params>
 					<param default="null" name="parent_id" datatype="int" value="param.memo_id" />
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 				</params>
 			</command>
 		</commands>
 		<files>
 			<file name="memo.file" path="${prop.memo.save.directory}/${query.memo.memo_id}" backup="${prop.memo.backup.directory}/${query.memo.memo_id}" />
 			<auth check="${result} > 0">
-				<sql>select count(*) from memo.memo where insert_id = ? and memo_id = ?</sql>
+				<sql>
+					select count(*) from <entity>${prop.table_name}</entity> as memo
+					where memo_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile> 
+				</sql>
 				<params>
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
 					<param name="memo_id" datatype="int" value="param.query.memo.memo_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 				</params>
 			</auth>
 		</files>
 		<layout>
 			<top>
 				<left>
-					<link name="list" label="목록" path="/memo/list" icon="list" class="material-icons md-18 list">
+					<link name="list" label="목록" path="list" icon="list" class="material-icons md-18 list">
 						<params>
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
+							<param name="category" value="category" type="prop" />
+							<param name="project_id" value="project_id" type="prop" />
 						</params>
 					</link>
-					<link name="detail" label="목록" path="/memo/detail" icon="list" class="material-icons md-18 list">
+					<link name="detail" label="목록" path="detail" icon="list" class="material-icons md-18 list">
 						<params>
 							<param name="memo_id" type="query" value="memo.parent_id" />
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
+							<param name="category" value="category" type="prop" />
+							<param name="project_id" value="project_id" type="prop" />
 						</params>
 					</link>
 				</left>
-				<center />
+				<center>
+					<search name="project" label="변경" path="project" method="post" cond="${prop.project.supported} equals 'gsp'">
+						<params>
+							<param name="memo_id" type="query" value="memo.memo_id" hidden="true" />
+							<param name="parent_id" type="query" value="memo.parent_id" hidden="true" />
+							<param name="page" type="param" value="page" hidden="true" />
+							<param name="search" type="param" value="search" hidden="true" />
+							<param name="category" value="category" type="prop" hidden="true" />
+							<param name="project_id" type="select" value="query.project_id" for="project" />
+						</params>
+					</search>
+				</center>
 				<right>
-					<link name="update" label="수정" path="/memo/insert"  icon="create" class="material-icons md-18 create">
+					<link name="update" label="수정" path="insert"  icon="create" class="material-icons md-18 create">
 						<params>
 							<param name="memo_id" type="query" value="memo.memo_id" />
 							<param name="parent_id" type="query" value="memo.parent_id" />
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
+							<param name="category" value="category" type="prop" />
+							<param name="project_id" value="project_id" type="prop" />
 						</params>
 					</link>
 				</right>
 			</top>
 			<middle>
-				<tab name="memo" label="메모">
+				<tab name="memo" label="${prop.app.label}">
+					<row cond="${prop.project_supported} equals 'true'">
+						<column label="프로젝트" name="project_id" colspan="3" code="true" for="project" />
+					</row>
+					<row cond="${prop.category_supported} equals 'true'">
+						<column label="분류" name="category" colspan="3" code="true" for="category" />
+					</row>
 					<row>
 						<column label="제목" name="title" colspan="3" />
 					</row>
@@ -577,11 +1018,13 @@ isHistoryEncrypted = true;
 				<tab name="memo_child" label="추가게시물" single="true">
 					<row>
 						<column label="제목" name="title">
-							<link path="/memo/detail">
+							<link path="detail">
 								<param name="memo_id" type="query" value="memo_id" />
 								<param name="parent_id" type="query" value="parent_id" />
 								<param name="search" type="param" value="search" />
 								<param name="page" type="param" value="page" />
+								<param name="category" value="category" type="prop" />
+								<param name="project_id" value="project_id" type="prop" />
 							</link>
 						</column>
 						<column label="암호화된 제목" name="encrypted_title" />
@@ -591,21 +1034,39 @@ isHistoryEncrypted = true;
 			</middle>
 			<bottom>
 				<left>
-					<link label="삭제" path="/memo/delete" method="post" type="submit" msg="정말로 삭제하시겠습니까?" icon="delete_sweep" class="material-icons md-18 delete_sweep">
+					<link label="삭제" path="delete" method="post" type="submit" msg="정말로 삭제하시겠습니까?" icon="delete_sweep" class="material-icons md-18 delete_sweep">
 						<params>
 							<param name="memo_id" type="query" value="memo.memo_id" />
 							<param name="parent_id" type="query" value="memo.parent_id" />
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
+							<param name="category" value="category" type="prop" />
+							<param name="project_id" value="project_id" type="prop" />
 						</params>
 					</link>
 				</left>
+				<center>
+					<search name="category" label="변경" path="category" method="post" cond="${prop.category.supported} equals 'gsp'">
+						<params>
+							<param name="memo_id" type="query" value="memo.memo_id" hidden="true" />
+							<param name="parent_id" type="query" value="memo.parent_id" hidden="true" />
+							<param name="page" type="param" value="page" hidden="true" />
+							<param name="search" type="param" value="search" hidden="true" />
+							<param name="project_id" value="project_id" type="prop" hidden="true" />
+							<param name="category" type="select" value="query.category" for="category" />
+						</params>
+					</search>
+				</center>
 				<right>
-					<link name="insert" label="추가" path="/memo/insert" icon="add" class="material-icons md-18 add">
+					<link name="insert" label="추가" path="insert" icon="add" class="material-icons md-18 add">
 						<params>
 							<param name="parent_id" type="query" value="memo.memo_id" />
 							<param name="page" type="param" value="page" />
 							<param name="search" type="param" value="search" />
+							<param name="category" value="category" type="prop" />
+							<param name="project_id" value="project_id" type="prop" />
+							<param name="parent_category" value="category" type="query" />
+							<param name="parent_project_id" value="project_id" type="query" />
 						</params>
 					</link>
 				</right>
@@ -613,7 +1074,7 @@ isHistoryEncrypted = true;
 			
 		</layout>
 	</query>
-	<query id="autosaved" funcType="detail" label="메모(${/document/rows/row/title})">
+	<query id="autosaved" funcType="detail" label="${prop.app.label}(${/document/rows/row/title})">
 		<header>
 		</header>
 		<commands>
@@ -628,9 +1089,26 @@ isHistoryEncrypted = true;
 </tile>
 						, marked
 						, encrypted
-					from memo.memo_history
+<tile cond="${prop.category_supported} equals 'true'">
+						, category
+</tile>
+<tile cond="${prop.project_supported} equals 'true'">
+						, project_id
+</tile>
+					from <entity>${prop.history_table_name}</entity> as memo_history
 					where autosave = true
-						and insert_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+						)
+</tile>
 <tile cond="${param.memo_id} isEmpty">
 						and memo_id is null
 </tile>
@@ -650,7 +1128,8 @@ isHistoryEncrypted = true;
 					limit 1
 				</sql>
 				<params>
-					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 					<param default="null" name="memo_id" datatype="int" value="param.memo_id" cond="${param.memo_id} isNotEmpty" />
 					<param default="null" name="memo_history_id" datatype="int" value="param.memo_history_id" cond="${param.memo_history_id} isNotEmpty" />
 					<param default="null" name="parent_id" datatype="int" value="param.parent_id" cond="${param.parent_id} isNotEmpty" />
@@ -659,49 +1138,101 @@ isHistoryEncrypted = true;
 		</commands>
 		<layout />
 	</query>
-	<query id="delete" funcType="delete" label="메모 삭제">
+	<query id="delete" funcType="delete" label="${prop.app.label} 삭제">
 		<tables>
-			<table tableName="memo.memo" name="memo">
+			<table tableName="${prop.table_name}" name="memo">
 				<column name="memo_id" primary="true" value="param.memo_id" datatype="int" />
 				<where>
 					<sql>
-						insert_id = ?
+						1 = 1
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile>
 					</sql>
 					<params>
-						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 					</params>
 				</where>
 			</table>
-			<table tableName="memo.memo" name="memo_child">
+			<table tableName="${prop.table_name}" name="memo_child">
 				<column name="parent_id" foreign="true" value="param.memo_id" datatype="int" />
 				<where>
 					<sql>
-						insert_id = ?
+						1 = 1
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_child.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_child.insert_id
+						)
+</tile>
 					</sql>
 					<params>
-						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 					</params>
 				</where>
 			</table>
-			<table tableName="memo.memo_history" name="memo_history">
+			<table tableName="${prop.history_table_name}" name="memo_history">
 				<column name="memo_id" foreign="true" value="param.memo_id" datatype="int" />
 				<where>
 					<sql>
-						insert_id = ?
+						1 = 1
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+						)
+</tile>
 					</sql>
 					<params>
-						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 					</params>
 				</where>
 			</table>
-			<table tableName="memo.memo_history" name="memo_child_history">
+			<table tableName="${prop.history_table_name}" name="memo_child_history">
 				<column name="parent_id" foreign="true" value="param.memo_id" datatype="int" />
 				<where>
 					<sql>
-						insert_id = ?
+						1 = 1
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_child_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_child_history.insert_id
+						)
+</tile>
 					</sql>
 					<params>
-						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 					</params>
 				</where>
 			</table>
@@ -709,30 +1240,264 @@ isHistoryEncrypted = true;
 		<files>
 			<file name="memo.file" path="${prop.memo.save.directory}/${param.memo_id}" backup="${prop.memo.backup.directory}/${param.memo_id}" />
 		</files>
-		<redirect path="/memo/list" cond="${param.parent_id} isEmpty">
+		<redirect path="list" cond="${param.parent_id} isEmpty">
 			<param name="search" type="param" value="search" />
+			<param name="category" value="category" type="prop" />
+			<param name="project_id" value="project_id" type="prop" />
 		</redirect>
-		<redirect path="/memo/detail" cond="${param.parent_id} isNotEmpty">
+		<redirect path="detail" cond="${param.parent_id} isNotEmpty">
 			 <param name="memo_id" type="param" value="parent_id" />
 			 <param name="page" type="param" value="page" />
 			 <param name="search" type="param" value="search" />
+			 <param name="category" value="category" type="prop" />
+			 <param name="project_id" value="project_id" type="prop" />
 		</redirect>
 	</query>
 	<query id="deleteAutoSave" funcType="delete" label="자동저장 삭제">
 		<tables>
-			<table tableName="memo.memo_history" name="memo_history">
+			<table tableName="${prop.history_table_name}" name="memo_history">
 				<column name="memo_history_id" foreign="true" value="param.memo_history_id" datatype="int" />
 				<where>
 					<sql>
-						insert_id = ?
+						1 = 1
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+						)
+</tile>
 					</sql>
 					<params>
-						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
 					</params>
 				</where>
 			</table>
 		</tables>
-		<redirect path="/memo/list" />
+		<redirect path="list" />
+	</query>
+	<query id="project" funcType="query" label="Project 변경" auth="${prop.project_supported} equals 'true'">
+		<commands>
+			<command>
+				<sql>
+					update <entity>${prop.table_name}</entity> as memo set project_id = ?
+					where parent_id is null
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile>
+						and memo_id = ?
+						
+				</sql>
+				<params>
+					<param name="project_id" datatype="int" value="prop.project_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
+					<param name="memo_id" datatype="int" value="param.memo_id" />
+				</params>
+			</command>
+			<command>
+				<sql>
+					update <entity>${prop.history_table_name}</entity> as memo_history set project_id = ?
+					where parent_id is null
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+						)
+</tile>
+						and memo_id = ?
+				</sql>
+				<params>
+					<param name="project_id" datatype="int" value="prop.project_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
+					<param name="memo_id" datatype="int" value="param.memo_id" />
+				</params>
+			</command>
+			<command>
+				<sql>
+					update <entity>${prop.table_name}</entity> as memo set project_id = ?
+					where parent_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile>
+				</sql>
+				<params>
+					<param name="project_id" datatype="int" value="prop.project_id" />
+					<param name="memo_id" datatype="int" value="param.memo_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
+				</params>
+			</command>
+			<command>
+				<sql>
+					update <entity>${prop.history_table_name}</entity> as memo_history set project_id = ?
+					where parent_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+						)
+</tile>
+				</sql>
+				<params>
+					<param name="project_id" datatype="int" value="prop.project_id" />
+					<param name="memo_id" datatype="int" value="param.memo_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
+				</params>
+			</command>
+		</commands>
+		<redirect path="detail">
+			 <param name="memo_id" type="param" value="memo_id" />
+			 <param name="search" type="param" value="search" />
+			 <param name="category" value="category" type="prop" />
+			 <param name="project_id" value="project_id" type="prop" />
+		</redirect>
+	</query>
+	<query id="category" funcType="query" label="Category 변경" auth="${prop.category_supported} equals 'true'">
+		<commands>
+			<command>
+				<sql>
+					update <entity>${prop.table_name}</entity> as memo set category = ?
+					where parent_id is null
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile>
+						and memo_id = ?
+				</sql>
+				<params>
+					<param name="category" datatype="varchar" value="prop.category" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
+					<param name="memo_id" datatype="int" value="param.memo_id" />
+				</params>
+			</command>
+			<command>
+				<sql>
+					update <entity>${prop.history_table_name}</entity> as memo_history set category = ?
+					where parent_id is null
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+						)
+</tile>
+						and memo_id = ?
+				</sql>
+				<params>
+					<param name="category" datatype="varchar" value="prop.category" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
+					<param name="memo_id" datatype="int" value="param.memo_id" />
+				</params>
+			</command>
+			<command>
+				<sql>
+					update <entity>${prop.table_name}</entity> as memo set category = ?
+					where parent_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo.insert_id
+						)
+</tile>
+				</sql>
+				<params>
+					<param name="category" datatype="varchar" value="prop.category" />
+					<param name="memo_id" datatype="int" value="param.memo_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
+				</params>
+			</command>
+			<command>
+				<sql>
+					update <entity>${prop.history_table_name}</entity> as memo_history set category = ?
+					where parent_id = ?
+<tile cond="${prop.authentication_type} equals 'login_name'">
+						and memo_history.insert_id = ?
+</tile>
+<tile cond="${prop.authentication_type} equals 'role_name'">
+						and exists (
+							select *
+							from <entity>${prop.user_role_table_name}</entity> _a
+							inner join <entity>${prop.user_role_table_name}</entity> _b 
+							on _a.<entity>${prop.role_name_column_name}</entity> = _b.<entity>${prop.role_name_column_name}</entity> and _b.<entity>${prop.login_name_column_name}</entity> = ?
+							where _a.<entity>${prop.login_name_column_name}</entity> = memo_history.insert_id
+						)
+</tile>
+				</sql>
+				<params>
+					<param name="category" datatype="varchar" value="prop.category" />
+					<param name="memo_id" datatype="int" value="param.memo_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'login_name'" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" cond="${prop.authentication_type} equals 'role_name'" />
+				</params>
+			</command>
+		</commands>
+		<redirect path="detail">
+			 <param name="memo_id" type="param" value="memo_id" />
+			 <param name="search" type="param" value="search" />
+			 <param name="category" value="category" type="prop" />
+			 <param name="project_id" value="project_id" type="prop" />
+		</redirect>
 	</query>
 </querys>
 

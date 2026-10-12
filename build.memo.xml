@@ -1,7 +1,7 @@
 <project name="build.memo">
 	<property name = "base.dir" value = "."/>
 	<property name = "app.name" value = "graha-memo"/>
-	<property name = "app.version" value = "0.9.0.0"/>
+	<property name = "app.version" value = "0.9.1.0"/>
 	<property name = "package.dir" value = "${base.dir}/package"/>
 	<property name = "graha.lib.dir" value = "/opt/java/lib/graha"/>
 	<property name = "apache.commons.lib.dir" value = "/opt/java/lib/apache-commons"/>

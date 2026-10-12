@@ -3,20 +3,39 @@ table#memo th.update_date {
 	width:200px;
 	text-align:center;
 }
-
+table#memo {
+	table-layout: fixed;
+}
+table#memo th.project_name, 
+table#memo td.project_name,
+table#memo th.category, 
+table#memo td.category {
+	width:150px;
+}
+table#memo td.project_name,
+table#memo td.category {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
 table#memo th.encrypted_title,
 table#memo td.encrypted_title,
 table#memo th.encrypted,
 table#memo td.encrypted {
 	display:none;
 }
-
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 900px) {
 	table#memo th.update_date,
-	table#memo td.update_date
+	table#memo td.update_date,
+	table#memo th.project_name, 
+	table#memo td.project_name,
+	table#memo th.category, 
+	table#memo td.category
 	{
 		display:none;
 	}
+}
+@media only screen and (max-width: 600px) {
 	div.nav.bottom {
 		font-size:18px;
 		display: grid;

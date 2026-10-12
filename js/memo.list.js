@@ -11,7 +11,11 @@ $(document).ready(function() {
 				MessageArea.confirm(
 					"자동저장된 게시물을 확인하시겠습니까?", 
 					function() {
-						location.href = "insert." + ext + "?memo_history_id=" + obj.rows["memo_history"][0].memo_history_id;
+						var saved = "insert." + ext + "?memo_history_id=" + obj.rows["memo_history"][0].memo_history_id;
+						if(obj.rows["memo_history"][0].parent_id) {
+							saved += "&parent_id=" + obj.rows["memo_history"][0].parent_id;
+						}
+						location.href = saved;
 					},
 					function() {
 						if(isEncrypted) {
